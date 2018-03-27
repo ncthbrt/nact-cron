@@ -11,12 +11,21 @@ let testExpression =
       ~daysOfMonth=`Wildcard,
       ~months=`Wildcard,
       ~daysOfWeek=`Wildcard,
+      ~years=`Wildcard,
       expression,
     ) =>
   test(
     "The cron expression " ++ expression ++ " should be correctly parsed", () =>
     expect(CronExpression.parse(expression))
-    |> toEqual({minutes, hours, daysOfMonth, months, daysOfWeek, expression})
+    |> toEqual({
+         minutes,
+         hours,
+         daysOfMonth,
+         months,
+         daysOfWeek,
+         years,
+         expression,
+       })
   );
 
 let testMalformedExpression = expression =>
@@ -56,8 +65,49 @@ testExpression(~months=`Values([|1, 2, 3|]), "* * * JAN-MAR *");
 
 testExpression(~daysOfWeek=`Values([|1, 2, 3, 4, 5|]), "* * * * MON-FRI");
 
+testExpression(
+  ~daysOfWeek=`Values(Belt.Array.rangeBy(~step=2, 2, 6)),
+  "* * * * TUE-/2",
+);
+
+testExpression(~daysOfMonth=`NearestWeekday(15), "* * 15W * *");
+
+testExpression(~daysOfMonth=`LastDayOfMonth, "* * L * *");
+
+testExpression(~daysOfWeek=`NthDayOfMonth((3, 3)), "* * * * WED#3");
+
+testExpression(~daysOfWeek=`NthDayOfMonth((3, 3)), "* * * * wed#3");
+
+testExpression(~daysOfWeek=`NthDayOfMonth((3, 3)), "* * * * 3#3");
+
+testExpression(~daysOfMonth=`LastWeekdayOfMonth, "* * LW * *");
+
+testExpression(
+  ~months=`Values([|1, 12|]),
+  ~years=`Values(Belt.Array.rangeBy(~step=3, 2000, 2020)),
+  "* * * DEC,JAN * 2000-2020/3",
+);
+
+testExpression(
+  ~months=`Values([|1, 12|]),
+  ~years=`OpenInterval((Some(2000), None, 3)),
+  "* * * DEC,JAN * 2000-/3",
+);
+
+testExpression(
+  ~months=`Values([|1, 12|]),
+  ~years=`OpenInterval((None, None, 2)),
+  "* * * DEC,JAN * */2",
+);
+
+testExpression(
+  ~months=`Values([|1, 12|]),
+  ~years=`OpenInterval((None, Some(2020), 2)),
+  "* * * DEC,JAN * -2020/2",
+);
+
 /* Extra field */
-testMalformedExpression("* * * DEC,JAN * *");
+testMalformedExpression("* * * DEC,JAN * * *");
 
 /* 59 is max */
 testMalformedExpression("60 * * DEC,JAN * *");

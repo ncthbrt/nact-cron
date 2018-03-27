@@ -5,12 +5,13 @@ var Jest = require("@glennsl/bs-jest/src/jest.js");
 var Belt_Array = require("bs-platform/lib/js/belt_Array.js");
 var CronExpression$NactPatterns = require("../src/CronExpression.bs.js");
 
-function testExpression($staropt$star, $staropt$star$1, $staropt$star$2, $staropt$star$3, $staropt$star$4, expression) {
+function testExpression($staropt$star, $staropt$star$1, $staropt$star$2, $staropt$star$3, $staropt$star$4, $staropt$star$5, expression) {
   var minutes = $staropt$star ? $staropt$star[0] : /* Wildcard */46765562;
   var hours = $staropt$star$1 ? $staropt$star$1[0] : /* Wildcard */46765562;
   var daysOfMonth = $staropt$star$2 ? $staropt$star$2[0] : /* Wildcard */46765562;
   var months = $staropt$star$3 ? $staropt$star$3[0] : /* Wildcard */46765562;
   var daysOfWeek = $staropt$star$4 ? $staropt$star$4[0] : /* Wildcard */46765562;
+  var years = $staropt$star$5 ? $staropt$star$5[0] : /* Wildcard */46765562;
   return Jest.test("The cron expression " + (expression + " should be correctly parsed"), (function () {
                 return Jest.ExpectJs[/* toEqual */12](/* record */[
                             /* minutes */minutes,
@@ -18,6 +19,7 @@ function testExpression($staropt$star, $staropt$star$1, $staropt$star$2, $starop
                             /* daysOfMonth */daysOfMonth,
                             /* months */months,
                             /* daysOfWeek */daysOfWeek,
+                            /* years */years,
                             /* expression */expression
                           ], Jest.ExpectJs[/* expect */0](CronExpression$NactPatterns.parse(expression)));
               }));
@@ -31,17 +33,17 @@ function testMalformedExpression(expression) {
               }));
 }
 
-testExpression(/* None */0, /* None */0, /* None */0, /* None */0, /* None */0, "* * * * *");
+testExpression(/* None */0, /* None */0, /* None */0, /* None */0, /* None */0, /* None */0, "* * * * *");
 
 testExpression(/* Some */[/* `Values */[
         72054786,
         /* int array */[0]
-      ]], /* None */0, /* None */0, /* None */0, /* None */0, "0 * * * *");
+      ]], /* None */0, /* None */0, /* None */0, /* None */0, /* None */0, "0 * * * *");
 
 testExpression(/* Some */[/* `Values */[
         72054786,
         Belt_Array.range(0, 10)
-      ]], /* None */0, /* None */0, /* None */0, /* None */0, "0-10 * * * *");
+      ]], /* None */0, /* None */0, /* None */0, /* None */0, /* None */0, "0-10 * * * *");
 
 testExpression(/* None */0, /* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
         72054786,
@@ -51,7 +53,7 @@ testExpression(/* None */0, /* None */0, /* None */0, /* None */0, /* Some */[/*
           4,
           6
         ]
-      ]], "* * * * */2");
+      ]], /* None */0, "* * * * */2");
 
 testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
         72054786,
@@ -59,7 +61,7 @@ testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
           9,
           11
         ]
-      ]], /* None */0, "* * * 9-12/2 *");
+      ]], /* None */0, /* None */0, "* * * 9-12/2 *");
 
 testExpression(/* None */0, /* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
         72054786,
@@ -69,7 +71,7 @@ testExpression(/* None */0, /* None */0, /* None */0, /* None */0, /* Some */[/*
           2,
           4
         ]
-      ]], "* * * * mon,tue,thu,sun");
+      ]], /* None */0, "* * * * mon,tue,thu,sun");
 
 testExpression(/* None */0, /* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
         72054786,
@@ -77,7 +79,7 @@ testExpression(/* None */0, /* None */0, /* None */0, /* None */0, /* Some */[/*
           0,
           2
         ]
-      ]], "* * * * 7,2");
+      ]], /* None */0, "* * * * 7,2");
 
 testExpression(/* Some */[/* `Values */[
         72054786,
@@ -88,7 +90,7 @@ testExpression(/* Some */[/* `Values */[
       ]], /* Some */[/* `Values */[
         72054786,
         /* int array */[1]
-      ]], /* None */0, /* None */0, "@monthly");
+      ]], /* None */0, /* None */0, /* None */0, "@monthly");
 
 testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
         72054786,
@@ -96,7 +98,7 @@ testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
           1,
           12
         ]
-      ]], /* None */0, "* * * DEC,JAN *");
+      ]], /* None */0, /* None */0, "* * * DEC,JAN *");
 
 testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
         72054786,
@@ -105,7 +107,7 @@ testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
           2,
           3
         ]
-      ]], /* None */0, "* * * JAN-MAR *");
+      ]], /* None */0, /* None */0, "* * * JAN-MAR *");
 
 testExpression(/* None */0, /* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
         72054786,
@@ -116,9 +118,103 @@ testExpression(/* None */0, /* None */0, /* None */0, /* None */0, /* Some */[/*
           4,
           5
         ]
-      ]], "* * * * MON-FRI");
+      ]], /* None */0, "* * * * MON-FRI");
 
-testMalformedExpression("* * * DEC,JAN * *");
+testExpression(/* None */0, /* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
+        72054786,
+        Belt_Array.rangeBy(2, 6, 2)
+      ]], /* None */0, "* * * * TUE-/2");
+
+testExpression(/* None */0, /* None */0, /* Some */[/* `NearestWeekday */[
+        525980234,
+        15
+      ]], /* None */0, /* None */0, /* None */0, "* * 15W * *");
+
+testExpression(/* None */0, /* None */0, /* Some */[/* LastDayOfMonth */-296263229], /* None */0, /* None */0, /* None */0, "* * L * *");
+
+testExpression(/* None */0, /* None */0, /* None */0, /* None */0, /* Some */[/* `NthDayOfMonth */[
+        753645455,
+        /* tuple */[
+          3,
+          3
+        ]
+      ]], /* None */0, "* * * * WED#3");
+
+testExpression(/* None */0, /* None */0, /* None */0, /* None */0, /* Some */[/* `NthDayOfMonth */[
+        753645455,
+        /* tuple */[
+          3,
+          3
+        ]
+      ]], /* None */0, "* * * * wed#3");
+
+testExpression(/* None */0, /* None */0, /* None */0, /* None */0, /* Some */[/* `NthDayOfMonth */[
+        753645455,
+        /* tuple */[
+          3,
+          3
+        ]
+      ]], /* None */0, "* * * * 3#3");
+
+testExpression(/* None */0, /* None */0, /* Some */[/* LastWeekdayOfMonth */-595231305], /* None */0, /* None */0, /* None */0, "* * LW * *");
+
+testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
+        72054786,
+        /* int array */[
+          1,
+          12
+        ]
+      ]], /* None */0, /* Some */[/* `Values */[
+        72054786,
+        Belt_Array.rangeBy(2000, 2020, 3)
+      ]], "* * * DEC,JAN * 2000-2020/3");
+
+testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
+        72054786,
+        /* int array */[
+          1,
+          12
+        ]
+      ]], /* None */0, /* Some */[/* `OpenInterval */[
+        783048527,
+        /* tuple */[
+          /* Some */[2000],
+          /* None */0,
+          3
+        ]
+      ]], "* * * DEC,JAN * 2000-/3");
+
+testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
+        72054786,
+        /* int array */[
+          1,
+          12
+        ]
+      ]], /* None */0, /* Some */[/* `OpenInterval */[
+        783048527,
+        /* tuple */[
+          /* None */0,
+          /* None */0,
+          2
+        ]
+      ]], "* * * DEC,JAN * */2");
+
+testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
+        72054786,
+        /* int array */[
+          1,
+          12
+        ]
+      ]], /* None */0, /* Some */[/* `OpenInterval */[
+        783048527,
+        /* tuple */[
+          /* None */0,
+          /* Some */[2020],
+          2
+        ]
+      ]], "* * * DEC,JAN * -2020/2");
+
+testMalformedExpression("* * * DEC,JAN * * *");
 
 testMalformedExpression("60 * * DEC,JAN * *");
 

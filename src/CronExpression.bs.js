@@ -5,7 +5,10 @@ var Block = require("bs-platform/lib/js/block.js");
 var Curry = require("bs-platform/lib/js/curry.js");
 var Js_exn = require("bs-platform/lib/js/js_exn.js");
 var Caml_obj = require("bs-platform/lib/js/caml_obj.js");
+var Belt_List = require("bs-platform/lib/js/belt_List.js");
 var Belt_Array = require("bs-platform/lib/js/belt_Array.js");
+var Caml_array = require("bs-platform/lib/js/caml_array.js");
+var Belt_Option = require("bs-platform/lib/js/belt_Option.js");
 var Caml_format = require("bs-platform/lib/js/caml_format.js");
 var Caml_exceptions = require("bs-platform/lib/js/caml_exceptions.js");
 var Caml_builtin_exceptions = require("bs-platform/lib/js/caml_builtin_exceptions.js");
@@ -80,10 +83,16 @@ var __x$2 = Belt_Array.zip(/* array */[
             return String(prim);
           })));
 
-var dayNames = Belt_Array.concat(__x$2, /* array */[/* tuple */[
+var dayNames = Belt_Array.concat(__x$2, /* array */[
+      /* tuple */[
         "7",
         "0"
-      ]]);
+      ],
+      /* tuple */[
+        "L",
+        "6"
+      ]
+    ]);
 
 var MalformedCronExpression = Caml_exceptions.create("CronExpression-NactPatterns.MalformedCronExpression");
 
@@ -142,23 +151,52 @@ function parseToken(field, substitutions) {
           }
       case 2 : 
           var start = match[0];
-          var end_ = match[1];
-          if (isNumber(substitute(substitutions, start)) && isNumber(substitute(substitutions, end_))) {
+          var exit = 0;
+          var exit$1 = 0;
+          var match$1 = match[1];
+          if (match$1 === "" && isNumber(substitute(substitutions, start))) {
             return /* RangeToken */Block.__(0, [
-                      Caml_format.caml_int_of_string(substitute(substitutions, start)),
-                      Caml_format.caml_int_of_string(substitute(substitutions, end_))
+                      /* Some */[Caml_format.caml_int_of_string(substitute(substitutions, start))],
+                      /* None */0
                     ]);
           } else {
-            throw MalformedCronExpression;
+            exit$1 = 2;
           }
+          if (exit$1 === 2) {
+            if (start === "") {
+              var end_ = match[1];
+              if (isNumber(substitute(substitutions, end_))) {
+                return /* RangeToken */Block.__(0, [
+                          /* None */0,
+                          /* Some */[Caml_format.caml_int_of_string(substitute(substitutions, end_))]
+                        ]);
+              } else {
+                exit = 1;
+              }
+            } else {
+              exit = 1;
+            }
+          }
+          if (exit === 1) {
+            var end_$1 = match[1];
+            if (isNumber(substitute(substitutions, start)) && isNumber(substitute(substitutions, end_$1))) {
+              return /* RangeToken */Block.__(0, [
+                        /* Some */[Caml_format.caml_int_of_string(substitute(substitutions, start))],
+                        /* Some */[Caml_format.caml_int_of_string(substitute(substitutions, end_$1))]
+                      ]);
+            } else {
+              throw MalformedCronExpression;
+            }
+          }
+          break;
       
     }
   }
 }
 
-function getIntervalToken(interval) {
+function getIntervalToken(step) {
   try {
-    return Caml_format.caml_int_of_string(interval);
+    return Caml_format.caml_int_of_string(step);
   }
   catch (raw_exn){
     var exn = Js_exn.internalToOCamlException(raw_exn);
@@ -197,22 +235,22 @@ function parseSubExpr(subExpr, start, end_, substitutions) {
           break;
       case 2 : 
           var field$1 = match[0];
-          var interval = match[1];
+          var step = match[1];
           match$1 = /* tuple */[
             parseToken(field$1, substitutions),
-            /* Some */[getIntervalToken(interval)]
+            /* Some */[getIntervalToken(step)]
           ];
           break;
       
     }
   }
-  var intervalToken = match$1[1];
+  var stepToken = match$1[1];
   var fieldToken = match$1[0];
   if (typeof fieldToken === "number") {
-    if (intervalToken) {
+    if (stepToken) {
       return /* `Values */[
               72054786,
-              Belt_Array.rangeBy(start, end_, intervalToken[0])
+              Belt_Array.rangeBy(start, end_, stepToken[0])
             ];
     } else {
       return /* Wildcard */46765562;
@@ -222,20 +260,20 @@ function parseSubExpr(subExpr, start, end_, substitutions) {
       case 0 : 
           var b = fieldToken[1];
           var a = fieldToken[0];
-          if (intervalToken) {
+          if (stepToken) {
             return /* `Values */[
                     72054786,
-                    Belt_Array.rangeBy(a, b, intervalToken[0])
+                    Belt_Array.rangeBy(Belt_Option.getWithDefault(a, start), Belt_Option.getWithDefault(b, end_), stepToken[0])
                   ];
           } else {
             return /* `Values */[
                     72054786,
-                    Belt_Array.range(a, b)
+                    Belt_Array.range(Belt_Option.getWithDefault(a, start), Belt_Option.getWithDefault(b, end_))
                   ];
           }
       case 1 : 
           var lst = fieldToken[0];
-          if (intervalToken) {
+          if (stepToken) {
             throw MalformedCronExpression;
           } else if (Belt_Array.every(lst, (function (param) {
                     return inRange(start, end_, param);
@@ -249,11 +287,11 @@ function parseSubExpr(subExpr, start, end_, substitutions) {
           }
       case 2 : 
           var n = fieldToken[0];
-          if (intervalToken) {
+          if (stepToken) {
             if (n <= end_) {
               return /* `Values */[
                       72054786,
-                      Belt_Array.rangeBy(n, end_, intervalToken[0])
+                      Belt_Array.rangeBy(n, end_, stepToken[0])
                     ];
             } else {
               throw MalformedCronExpression;
@@ -271,26 +309,244 @@ function parseSubExpr(subExpr, start, end_, substitutions) {
   }
 }
 
+var nearestWeekdayRegex = new RegExp("^\\d+W$");
+
+var lastDayOfWeekRegex = new RegExp("^[0-7]L$");
+
+var nthDayOfMonthRegex = new RegExp("^([0-7]|[A-Za-z]{3})#[1-5]$");
+
+function parseDaysOfMonthSubExpr(subExpr) {
+  switch (subExpr) {
+    case "L" : 
+        return /* LastDayOfMonth */-296263229;
+    case "LW" : 
+        return /* LastWeekdayOfMonth */-595231305;
+    default:
+      if (nearestWeekdayRegex.test(subExpr)) {
+        var n = Caml_format.caml_int_of_string(subExpr.replace("W", ""));
+        if (inRange(1, 31, n)) {
+          return /* `NearestWeekday */[
+                  525980234,
+                  n
+                ];
+        } else {
+          throw MalformedCronExpression;
+        }
+      } else {
+        return parseSubExpr(subExpr, 1, 31, /* array */[]);
+      }
+  }
+}
+
+function parseDaysOfWeekSubExpr(subExpr) {
+  if (lastDayOfWeekRegex.test(subExpr)) {
+    var n = Caml_format.caml_int_of_string(subExpr.replace("L", ""));
+    var match = +(n === 7);
+    return /* `LastDayOfMonth */[
+            -296263229,
+            match !== 0 ? 0 : n
+          ];
+  } else if (nthDayOfMonthRegex.test(subExpr)) {
+    var arr = subExpr.split("#");
+    var match$1;
+    try {
+      match$1 = /* tuple */[
+        Caml_format.caml_int_of_string(substitute(dayNames, Caml_array.caml_array_get(arr, 0))),
+        Caml_format.caml_int_of_string(Caml_array.caml_array_get(arr, 1))
+      ];
+    }
+    catch (raw_exn){
+      var exn = Js_exn.internalToOCamlException(raw_exn);
+      if (exn[0] === Caml_builtin_exceptions.failure) {
+        throw MalformedCronExpression;
+      } else {
+        throw exn;
+      }
+    }
+    return /* `NthDayOfMonth */[
+            753645455,
+            /* tuple */[
+              match$1[0],
+              match$1[1]
+            ]
+          ];
+  } else {
+    return parseSubExpr(subExpr, 0, 6, dayNames);
+  }
+}
+
+function parseYearsSubExpr(subExpr) {
+  var match = subExpr.split("/");
+  var len = match.length;
+  var match$1;
+  if (len >= 3) {
+    throw MalformedCronExpression;
+  } else {
+    switch (len) {
+      case 0 : 
+          throw MalformedCronExpression;
+      case 1 : 
+          var field = match[0];
+          match$1 = /* tuple */[
+            parseToken(field, /* array */[]),
+            /* None */0
+          ];
+          break;
+      case 2 : 
+          var field$1 = match[0];
+          var step = match[1];
+          match$1 = /* tuple */[
+            parseToken(field$1, /* array */[]),
+            /* Some */[getIntervalToken(step)]
+          ];
+          break;
+      
+    }
+  }
+  var stepToken = match$1[1];
+  var fieldToken = match$1[0];
+  if (typeof fieldToken === "number") {
+    if (stepToken) {
+      return /* `OpenInterval */[
+              783048527,
+              /* tuple */[
+                /* None */0,
+                /* None */0,
+                stepToken[0]
+              ]
+            ];
+    } else {
+      return /* Wildcard */46765562;
+    }
+  } else {
+    switch (fieldToken.tag | 0) {
+      case 0 : 
+          var a = fieldToken[0];
+          var exit = 0;
+          if (a) {
+            var match$2 = fieldToken[1];
+            if (match$2) {
+              var b = match$2[0];
+              var a$1 = a[0];
+              if (stepToken) {
+                return /* `Values */[
+                        72054786,
+                        Belt_Array.rangeBy(a$1, b, stepToken[0])
+                      ];
+              } else {
+                return /* `Values */[
+                        72054786,
+                        Belt_Array.range(a$1, b)
+                      ];
+              }
+            } else {
+              exit = 1;
+            }
+          } else {
+            exit = 1;
+          }
+          if (exit === 1) {
+            var b$1 = fieldToken[1];
+            if (stepToken) {
+              return /* `OpenInterval */[
+                      783048527,
+                      /* tuple */[
+                        a,
+                        b$1,
+                        stepToken[0]
+                      ]
+                    ];
+            } else {
+              return /* `OpenInterval */[
+                      783048527,
+                      /* tuple */[
+                        a,
+                        b$1,
+                        1
+                      ]
+                    ];
+            }
+          }
+          break;
+      case 1 : 
+          if (stepToken) {
+            throw MalformedCronExpression;
+          } else {
+            return /* `Values */[
+                    72054786,
+                    fieldToken[0].sort()
+                  ];
+          }
+      case 2 : 
+          var n = fieldToken[0];
+          if (stepToken) {
+            return /* `OpenInterval */[
+                    783048527,
+                    /* tuple */[
+                      /* Some */[n],
+                      /* None */0,
+                      stepToken[0]
+                    ]
+                  ];
+          } else {
+            return /* `Values */[
+                    72054786,
+                    /* int array */[n]
+                  ];
+          }
+      
+    }
+  }
+}
+
 var spacesRegex = new RegExp("\\s+");
 
 function parse(str) {
-  var match = substitute(substitutions, str.trim()).split(spacesRegex);
-  if (match.length !== 5) {
-    throw MalformedCronExpression;
+  var match = Belt_List.fromArray(substitute(substitutions, str.trim()).split(spacesRegex));
+  if (match) {
+    var match$1 = match[1];
+    if (match$1) {
+      var match$2 = match$1[1];
+      if (match$2) {
+        var match$3 = match$2[1];
+        if (match$3) {
+          var match$4 = match$3[1];
+          if (match$4) {
+            var rest = match$4[1];
+            if (Belt_List.length(rest) <= 1) {
+              var daysOfWeek = parseDaysOfWeekSubExpr(match$4[0]);
+              var daysOfMonth = parseDaysOfMonthSubExpr(match$2[0]);
+              if (daysOfMonth !== /* Wildcard */46765562 && daysOfWeek !== /* Wildcard */46765562) {
+                throw MalformedCronExpression;
+              } else {
+                var match$5 = Belt_List.head(rest);
+                return /* record */[
+                        /* minutes */parseSubExpr(match[0], 0, 59, /* array */[]),
+                        /* hours */parseSubExpr(match$1[0], 0, 23, /* array */[]),
+                        /* daysOfMonth */daysOfMonth,
+                        /* months */parseSubExpr(match$3[0], 1, 12, monthNames),
+                        /* daysOfWeek */daysOfWeek,
+                        /* years */match$5 ? parseYearsSubExpr(match$5[0]) : /* Wildcard */46765562,
+                        /* expression */str
+                      ];
+              }
+            } else {
+              throw MalformedCronExpression;
+            }
+          } else {
+            throw MalformedCronExpression;
+          }
+        } else {
+          throw MalformedCronExpression;
+        }
+      } else {
+        throw MalformedCronExpression;
+      }
+    } else {
+      throw MalformedCronExpression;
+    }
   } else {
-    var minutes = match[0];
-    var hours = match[1];
-    var daysOfMonth = match[2];
-    var months = match[3];
-    var daysOfWeek = match[4];
-    return /* record */[
-            /* minutes */parseSubExpr(minutes, 0, 59, /* array */[]),
-            /* hours */parseSubExpr(hours, 0, 23, /* array */[]),
-            /* daysOfMonth */parseSubExpr(daysOfMonth, 1, 31, /* array */[]),
-            /* months */parseSubExpr(months, 1, 12, monthNames),
-            /* daysOfWeek */parseSubExpr(daysOfWeek, 0, 6, dayNames),
-            /* expression */str
-          ];
+    throw MalformedCronExpression;
   }
 }
 
