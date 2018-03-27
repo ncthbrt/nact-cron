@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "scripts": {
     "build": "bsb -make-world",
+    "test": "jest --coverage",
+    "test-watch": "jest --coverage --watch",
     "start": "bsb -make-world -w",
     "clean": "bsb -clean-world"
   },
@@ -12,7 +14,9 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "bs-platform": "^2.2.0"
+    "@glennsl/bs-jest": "^0.4.2",
+    "bs-platform": "^2.2.0",
+    "reason-nact": "^2.0.1"
   },
   "peerDependencies": {
     "reason-nact": "^2.0.1"
