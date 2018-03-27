@@ -90,7 +90,7 @@ var dayNames = Belt_Array.concat(__x$2, /* array */[
       ],
       /* tuple */[
         "L",
-        "6"
+        "7"
       ]
     ]);
 
@@ -142,12 +142,16 @@ function parseToken(field, substitutions) {
           throw MalformedCronExpression;
       case 1 : 
           var n = match[0];
-          if (n === "*") {
-            return /* WildcardToken */0;
-          } else if (isNumber(substitute(substitutions, n))) {
-            return /* NumberToken */Block.__(2, [Caml_format.caml_int_of_string(substitute(substitutions, n))]);
-          } else {
-            return /* CommaSeparatedListToken */Block.__(1, [toCommaSeparatedList(n, substitute$1)]);
+          switch (n) {
+            case "*" : 
+            case "?" : 
+                return /* WildcardToken */0;
+            default:
+              if (isNumber(substitute(substitutions, n))) {
+                return /* NumberToken */Block.__(2, [Caml_format.caml_int_of_string(substitute(substitutions, n))]);
+              } else {
+                return /* CommaSeparatedListToken */Block.__(1, [toCommaSeparatedList(n, substitute$1)]);
+              }
           }
       case 2 : 
           var start = match[0];
@@ -313,21 +317,36 @@ var nearestWeekdayRegex = new RegExp("^\\d+W$");
 
 var lastDayOfWeekRegex = new RegExp("^[0-7]L$");
 
-var nthDayOfMonthRegex = new RegExp("^([0-7]|[A-Za-z]{3})#[1-5]$");
+var daysBeforeEndOfMonthRegex = new RegExp("^L\\-\\d+$");
+
+var nthDayOfWeekInMonthRegex = new RegExp("^([0-7]|[A-Za-z]{3})#[1-5]$");
 
 function parseDaysOfMonthSubExpr(subExpr) {
   switch (subExpr) {
     case "L" : 
-        return /* LastDayOfMonth */-296263229;
+        return /* `DaysBeforeEndOfMonth */[
+                1044297284,
+                0
+              ];
     case "LW" : 
         return /* LastWeekdayOfMonth */-595231305;
     default:
-      if (nearestWeekdayRegex.test(subExpr)) {
-        var n = Caml_format.caml_int_of_string(subExpr.replace("W", ""));
+      if (daysBeforeEndOfMonthRegex.test(subExpr)) {
+        var n = Caml_format.caml_int_of_string(subExpr.replace("L-", ""));
         if (inRange(1, 31, n)) {
+          return /* `DaysBeforeEndOfMonth */[
+                  1044297284,
+                  n - 1 | 0
+                ];
+        } else {
+          throw MalformedCronExpression;
+        }
+      } else if (nearestWeekdayRegex.test(subExpr)) {
+        var n$1 = Caml_format.caml_int_of_string(subExpr.replace("W", ""));
+        if (inRange(1, 32, n$1)) {
           return /* `NearestWeekday */[
                   525980234,
-                  n
+                  n$1
                 ];
         } else {
           throw MalformedCronExpression;
@@ -342,11 +361,11 @@ function parseDaysOfWeekSubExpr(subExpr) {
   if (lastDayOfWeekRegex.test(subExpr)) {
     var n = Caml_format.caml_int_of_string(subExpr.replace("L", ""));
     var match = +(n === 7);
-    return /* `LastDayOfMonth */[
-            -296263229,
+    return /* `LastDayOfWeekInMonth */[
+            -1029051830,
             match !== 0 ? 0 : n
           ];
-  } else if (nthDayOfMonthRegex.test(subExpr)) {
+  } else if (nthDayOfWeekInMonthRegex.test(subExpr)) {
     var arr = subExpr.split("#");
     var match$1;
     try {
@@ -363,8 +382,8 @@ function parseDaysOfWeekSubExpr(subExpr) {
         throw exn;
       }
     }
-    return /* `NthDayOfMonth */[
-            753645455,
+    return /* `NthDayOfWeekInMonth */[
+            -339304170,
             /* tuple */[
               match$1[0],
               match$1[1]
@@ -407,8 +426,8 @@ function parseYearsSubExpr(subExpr) {
   var fieldToken = match$1[0];
   if (typeof fieldToken === "number") {
     if (stepToken) {
-      return /* `OpenInterval */[
-              783048527,
+      return /* `UnboundedInterval */[
+              -1055288279,
               /* tuple */[
                 /* None */0,
                 /* None */0,
@@ -448,8 +467,8 @@ function parseYearsSubExpr(subExpr) {
           if (exit === 1) {
             var b$1 = fieldToken[1];
             if (stepToken) {
-              return /* `OpenInterval */[
-                      783048527,
+              return /* `UnboundedInterval */[
+                      -1055288279,
                       /* tuple */[
                         a,
                         b$1,
@@ -457,8 +476,8 @@ function parseYearsSubExpr(subExpr) {
                       ]
                     ];
             } else {
-              return /* `OpenInterval */[
-                      783048527,
+              return /* `UnboundedInterval */[
+                      -1055288279,
                       /* tuple */[
                         a,
                         b$1,
@@ -480,8 +499,8 @@ function parseYearsSubExpr(subExpr) {
       case 2 : 
           var n = fieldToken[0];
           if (stepToken) {
-            return /* `OpenInterval */[
-                    783048527,
+            return /* `UnboundedInterval */[
+                    -1055288279,
                     /* tuple */[
                       /* Some */[n],
                       /* None */0,
@@ -514,22 +533,16 @@ function parse(str) {
           if (match$4) {
             var rest = match$4[1];
             if (Belt_List.length(rest) <= 1) {
-              var daysOfWeek = parseDaysOfWeekSubExpr(match$4[0]);
-              var daysOfMonth = parseDaysOfMonthSubExpr(match$2[0]);
-              if (daysOfMonth !== /* Wildcard */46765562 && daysOfWeek !== /* Wildcard */46765562) {
-                throw MalformedCronExpression;
-              } else {
-                var match$5 = Belt_List.head(rest);
-                return /* record */[
-                        /* minutes */parseSubExpr(match[0], 0, 59, /* array */[]),
-                        /* hours */parseSubExpr(match$1[0], 0, 23, /* array */[]),
-                        /* daysOfMonth */daysOfMonth,
-                        /* months */parseSubExpr(match$3[0], 1, 12, monthNames),
-                        /* daysOfWeek */daysOfWeek,
-                        /* years */match$5 ? parseYearsSubExpr(match$5[0]) : /* Wildcard */46765562,
-                        /* expression */str
-                      ];
-              }
+              var match$5 = Belt_List.head(rest);
+              return /* record */[
+                      /* minutes */parseSubExpr(match[0], 0, 59, /* array */[]),
+                      /* hours */parseSubExpr(match$1[0], 0, 23, /* array */[]),
+                      /* daysOfMonth */parseDaysOfMonthSubExpr(match$2[0]),
+                      /* months */parseSubExpr(match$3[0], 1, 12, monthNames),
+                      /* daysOfWeek */parseDaysOfWeekSubExpr(match$4[0]),
+                      /* years */match$5 ? parseYearsSubExpr(match$5[0]) : /* Wildcard */46765562,
+                      /* expression */str
+                    ];
             } else {
               throw MalformedCronExpression;
             }

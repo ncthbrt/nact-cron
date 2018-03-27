@@ -16,6 +16,7 @@
   "devDependencies": {
     "@glennsl/bs-jest": "^0.4.2",
     "bs-platform": "^2.2.0",
+    "husky": "^0.14.3",
     "reason-nact": "^2.0.1"
   },
   "peerDependencies": {

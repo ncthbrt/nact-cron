@@ -12,7 +12,7 @@ type t = {
   daysOfMonth: [
     | `Values(array(int))
     | `Wildcard
-    | `LastDayOfMonth
+    | `DaysBeforeEndOfMonth(int)
     | `NearestWeekday(int)
     | `LastWeekdayOfMonth
   ],
@@ -20,13 +20,13 @@ type t = {
   daysOfWeek: [
     | `Values(array(int))
     | `Wildcard
-    | `LastDayOfMonth(int)
-    | `NthDayOfMonth(day, int)
+    | `LastDayOfWeekInMonth(int)
+    | `NthDayOfWeekInMonth(day, int)
   ],
   years: [
     | `Values(array(int))
     | `Wildcard
-    | `OpenInterval(option(startYear), option(endYear), step)
+    | `UnboundedInterval(option(startYear), option(endYear), step)
   ],
   expression: string,
 };

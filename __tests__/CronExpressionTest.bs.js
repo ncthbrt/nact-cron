@@ -63,6 +63,10 @@ testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
         ]
       ]], /* None */0, /* None */0, "* * * 9-12/2 *");
 
+testExpression(/* None */0, /* None */0, /* None */0, /* None */0, /* None */0, /* None */0, "* * * ? *");
+
+testExpression(/* None */0, /* None */0, /* None */0, /* None */0, /* None */0, /* None */0, "* * * * * ?");
+
 testExpression(/* None */0, /* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
         72054786,
         /* int array */[
@@ -90,7 +94,71 @@ testExpression(/* Some */[/* `Values */[
       ]], /* Some */[/* `Values */[
         72054786,
         /* int array */[1]
+      ]], /* Some */[/* `Values */[
+        72054786,
+        /* int array */[1]
+      ]], /* None */0, /* None */0, "@annually");
+
+testExpression(/* Some */[/* `Values */[
+        72054786,
+        /* int array */[0]
+      ]], /* Some */[/* `Values */[
+        72054786,
+        /* int array */[0]
+      ]], /* Some */[/* `Values */[
+        72054786,
+        /* int array */[1]
       ]], /* None */0, /* None */0, /* None */0, "@monthly");
+
+testExpression(/* Some */[/* `Values */[
+        72054786,
+        /* int array */[0]
+      ]], /* Some */[/* `Values */[
+        72054786,
+        /* int array */[0]
+      ]], /* None */0, /* None */0, /* Some */[/* `Values */[
+        72054786,
+        /* int array */[0]
+      ]], /* None */0, "@weekly");
+
+testExpression(/* Some */[/* `Values */[
+        72054786,
+        /* int array */[0]
+      ]], /* Some */[/* `Values */[
+        72054786,
+        /* int array */[0]
+      ]], /* None */0, /* None */0, /* None */0, /* None */0, "@daily");
+
+testExpression(/* Some */[/* `Values */[
+        72054786,
+        /* int array */[0]
+      ]], /* Some */[/* `Values */[
+        72054786,
+        /* int array */[0]
+      ]], /* None */0, /* None */0, /* None */0, /* None */0, "@midnight");
+
+testExpression(/* Some */[/* `Values */[
+        72054786,
+        /* int array */[0]
+      ]], /* None */0, /* None */0, /* None */0, /* None */0, /* None */0, "@hourly");
+
+testExpression(/* Some */[/* `Values */[
+        72054786,
+        /* int array */[0]
+      ]], /* Some */[/* `Values */[
+        72054786,
+        /* int array */[18]
+      ]], /* None */0, /* None */0, /* Some */[/* `LastDayOfWeekInMonth */[
+        -1029051830,
+        6
+      ]], /* Some */[/* `Values */[
+        72054786,
+        /* int array */[
+          2015,
+          2016,
+          2017
+        ]
+      ]], "0 18 ? * 6L 2015-2017");
 
 testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
         72054786,
@@ -108,6 +176,15 @@ testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
           3
         ]
       ]], /* None */0, /* None */0, "* * * JAN-MAR *");
+
+testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
+        72054786,
+        /* int array */[
+          1,
+          3,
+          5
+        ]
+      ]], /* None */0, /* None */0, "* * * JAN-MAY/2 *");
 
 testExpression(/* None */0, /* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
         72054786,
@@ -130,26 +207,43 @@ testExpression(/* None */0, /* None */0, /* Some */[/* `NearestWeekday */[
         15
       ]], /* None */0, /* None */0, /* None */0, "* * 15W * *");
 
-testExpression(/* None */0, /* None */0, /* Some */[/* LastDayOfMonth */-296263229], /* None */0, /* None */0, /* None */0, "* * L * *");
+testExpression(/* None */0, /* None */0, /* Some */[/* `DaysBeforeEndOfMonth */[
+        1044297284,
+        0
+      ]], /* None */0, /* None */0, /* None */0, "* * L * *");
 
-testExpression(/* None */0, /* None */0, /* None */0, /* None */0, /* Some */[/* `NthDayOfMonth */[
-        753645455,
+testExpression(/* None */0, /* None */0, /* Some */[/* `DaysBeforeEndOfMonth */[
+        1044297284,
+        1
+      ]], /* None */0, /* None */0, /* None */0, "* * L-2 * *");
+
+testMalformedExpression("* * L-32 * *");
+
+testMalformedExpression("* * L-0 * *");
+
+testExpression(/* None */0, /* None */0, /* None */0, /* None */0, /* Some */[/* `LastDayOfWeekInMonth */[
+        -1029051830,
+        5
+      ]], /* None */0, "* * * * 5L");
+
+testExpression(/* None */0, /* None */0, /* None */0, /* None */0, /* Some */[/* `NthDayOfWeekInMonth */[
+        -339304170,
         /* tuple */[
           3,
           3
         ]
       ]], /* None */0, "* * * * WED#3");
 
-testExpression(/* None */0, /* None */0, /* None */0, /* None */0, /* Some */[/* `NthDayOfMonth */[
-        753645455,
+testExpression(/* None */0, /* None */0, /* None */0, /* None */0, /* Some */[/* `NthDayOfWeekInMonth */[
+        -339304170,
         /* tuple */[
           3,
           3
         ]
       ]], /* None */0, "* * * * wed#3");
 
-testExpression(/* None */0, /* None */0, /* None */0, /* None */0, /* Some */[/* `NthDayOfMonth */[
-        753645455,
+testExpression(/* None */0, /* None */0, /* None */0, /* None */0, /* Some */[/* `NthDayOfWeekInMonth */[
+        -339304170,
         /* tuple */[
           3,
           3
@@ -175,8 +269,8 @@ testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
           1,
           12
         ]
-      ]], /* None */0, /* Some */[/* `OpenInterval */[
-        783048527,
+      ]], /* None */0, /* Some */[/* `UnboundedInterval */[
+        -1055288279,
         /* tuple */[
           /* Some */[2000],
           /* None */0,
@@ -190,8 +284,83 @@ testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
           1,
           12
         ]
-      ]], /* None */0, /* Some */[/* `OpenInterval */[
-        783048527,
+      ]], /* None */0, /* Some */[/* `UnboundedInterval */[
+        -1055288279,
+        /* tuple */[
+          /* Some */[2000],
+          /* None */0,
+          3
+        ]
+      ]], "* * * DEC,JAN * 2000/3");
+
+testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
+        72054786,
+        /* int array */[
+          1,
+          12
+        ]
+      ]], /* None */0, /* Some */[/* `UnboundedInterval */[
+        -1055288279,
+        /* tuple */[
+          /* Some */[2000],
+          /* None */0,
+          1
+        ]
+      ]], "* * * DEC,JAN * 2000-");
+
+testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
+        72054786,
+        /* int array */[
+          1,
+          12
+        ]
+      ]], /* None */0, /* Some */[/* `UnboundedInterval */[
+        -1055288279,
+        /* tuple */[
+          /* None */0,
+          /* Some */[2020],
+          1
+        ]
+      ]], "* * * DEC,JAN * -2020");
+
+testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
+        72054786,
+        /* int array */[
+          1,
+          12
+        ]
+      ]], /* None */0, /* Some */[/* `UnboundedInterval */[
+        -1055288279,
+        /* tuple */[
+          /* None */0,
+          /* Some */[2020],
+          2
+        ]
+      ]], "* * * DEC,JAN * -2020/2");
+
+testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
+        72054786,
+        /* int array */[
+          1,
+          12
+        ]
+      ]], /* None */0, /* Some */[/* `Values */[
+        72054786,
+        /* int array */[
+          2018,
+          2019,
+          2020
+        ]
+      ]], "* * * DEC,JAN * 2018,2019,2020");
+
+testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
+        72054786,
+        /* int array */[
+          1,
+          12
+        ]
+      ]], /* None */0, /* Some */[/* `UnboundedInterval */[
+        -1055288279,
         /* tuple */[
           /* None */0,
           /* None */0,
@@ -205,8 +374,23 @@ testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
           1,
           12
         ]
-      ]], /* None */0, /* Some */[/* `OpenInterval */[
-        783048527,
+      ]], /* None */0, /* Some */[/* `UnboundedInterval */[
+        -1055288279,
+        /* tuple */[
+          /* None */0,
+          /* None */0,
+          2
+        ]
+      ]], "* * * DEC,JAN * */2");
+
+testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
+        72054786,
+        /* int array */[
+          1,
+          12
+        ]
+      ]], /* None */0, /* Some */[/* `UnboundedInterval */[
+        -1055288279,
         /* tuple */[
           /* None */0,
           /* Some */[2020],
@@ -216,17 +400,45 @@ testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
 
 testMalformedExpression("* * * DEC,JAN * * *");
 
+testMalformedExpression("* * * *");
+
+testMalformedExpression("* * *");
+
+testMalformedExpression("* *");
+
+testMalformedExpression("*");
+
+testMalformedExpression("* * * DEC,JAN * 2020-/2/2");
+
+testMalformedExpression("* * * DEC-/2/3 * *");
+
+testMalformedExpression("* * * DEC,JAN * 2020,2021/2");
+
+testMalformedExpression("* * * DEC,JAN/2 * *");
+
+testMalformedExpression("* * * 1,2/2 * *");
+
+testMalformedExpression("* * * 10-20/ * *");
+
 testMalformedExpression("60 * * DEC,JAN * *");
 
 testMalformedExpression("* 24 * DEC,JAN * *");
 
 testMalformedExpression("* * 32 DEC,JAN * *");
 
+testMalformedExpression("* * 0 DEC,JAN * *");
+
 testMalformedExpression("* * * 13 *");
+
+testMalformedExpression("* * * 0 *");
 
 testMalformedExpression("* * * * 8");
 
 testMalformedExpression("* * * JANFEB *");
+
+testMalformedExpression("* * * - *");
+
+testMalformedExpression("* * * * * -");
 
 exports.testExpression = testExpression;
 exports.testMalformedExpression = testMalformedExpression;

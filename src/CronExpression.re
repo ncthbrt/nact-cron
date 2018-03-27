@@ -1,30 +1,3 @@
-/* module CronExpression = {
-
-   };
-
-    type scheduleId = string;
-
-    module Protocol = {
-      module Response = {
-        type creationResponse('a) = 'a
-        constraint [> | `ScheduleCreated(string)] = 'a;
-        type cancellationResponse('a) = 'a
-        constraint [> | `ScheduleCancelled(string)] = 'a;
-      };
-      module Request = {
-        type t('a) = string;
-        let create = (schedule, msg, actor, requestee) => "Hello";
-        let cancel = (scheduleId, requestee) => "Goodbye";
-      };
-    };
-
-    let createScheduleActor = (~parent, ~key) =>
-      Nact.spawnPersistent(
-        ~key,
-        parent,
-        (state, msg, ctx) => Js.Promise.resolve(state),
-        [],
-      ); */
 let substitutions = [|
   ("@annually", "0 0 1 1 *"),
   ("@monthly", "0 0 1 * *"),
@@ -70,7 +43,7 @@ let dayNames =
     [|"SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"|],
     Belt.Array.range(0, 6) |> Belt.Array.map(_, string_of_int),
   )
-  |> Belt.Array.concat(_, [|("7", "0"), ("L", "6")|]);
+  |> Belt.Array.concat(_, [|("7", "0"), ("L", "7")|]);
 
 type parsedCronExpression = [ | `Values(array(int)) | `Wildcard];
 
@@ -87,19 +60,19 @@ type t = {
   hours: parsedCronExpression,
   daysOfMonth: [
     parsedCronExpression
-    | `LastDayOfMonth
+    | `DaysBeforeEndOfMonth(int)
     | `NearestWeekday(int)
     | `LastWeekdayOfMonth
   ],
   months: parsedCronExpression,
   daysOfWeek: [
     parsedCronExpression
-    | `LastDayOfMonth(int)
-    | `NthDayOfMonth(day, int)
+    | `LastDayOfWeekInMonth(int)
+    | `NthDayOfWeekInMonth(day, int)
   ],
   years: [
     parsedCronExpression
-    | `OpenInterval(option(startYear), option(endYear), step)
+    | `UnboundedInterval(option(startYear), option(endYear), step)
   ],
   expression: string,
 };
@@ -130,7 +103,8 @@ let toCommaSeparatedList = (str, substitute) =>
 let parseToken = (field, substitutions) => {
   let substitute = substitute(substitutions);
   switch (Js.String.split("-", field)) {
-  | [|"*"|] => WildcardToken
+  | [|"*"|]
+  | [|"?"|] => WildcardToken
   | [|start, ""|] when isNumber(substitute(start)) =>
     RangeToken(Some(int_of_string(substitute(start))), None)
   | [|"", end_|] when isNumber(substitute(end_)) =>
@@ -199,15 +173,26 @@ let nearestWeekdayRegex = Js.Re.fromString("^\\d+W$");
 
 let lastDayOfWeekRegex = Js.Re.fromString("^[0-7]L$");
 
-let nthDayOfMonthRegex = Js.Re.fromString("^([0-7]|[A-Za-z]{3})#[1-5]$");
+let daysBeforeEndOfMonthRegex = Js.Re.fromString("^L\\-\\d+$");
+
+let nthDayOfWeekInMonthRegex =
+  Js.Re.fromString("^([0-7]|[A-Za-z]{3})#[1-5]$");
 
 let parseDaysOfMonthSubExpr =
   fun
-  | "L" => `LastDayOfMonth
+  | "L" => `DaysBeforeEndOfMonth(0)
   | "LW" => `LastWeekdayOfMonth
+  | subExpr when Js.Re.test(subExpr, daysBeforeEndOfMonthRegex) => {
+      let n = int_of_string(Js.String.replace("L-", "", subExpr));
+      if (inRange(1, 31, n)) {
+        `DaysBeforeEndOfMonth(n - 1);
+      } else {
+        raise(MalformedCronExpression);
+      };
+    }
   | subExpr when Js.Re.test(subExpr, nearestWeekdayRegex) => {
       let n = int_of_string(Js.String.replace("W", "", subExpr));
-      if (inRange(1, 31, n)) {
+      if (inRange(1, 32, n)) {
         `NearestWeekday(n);
       } else {
         raise(MalformedCronExpression);
@@ -219,9 +204,9 @@ let parseDaysOfWeekSubExpr =
   fun
   | subExpr when Js.Re.test(subExpr, lastDayOfWeekRegex) => {
       let n = subExpr |> Js.String.replace("L", "", _) |> int_of_string(_);
-      `LastDayOfMonth(n == 7 ? 0 : n);
+      `LastDayOfWeekInMonth(n == 7 ? 0 : n);
     }
-  | subExpr when Js.Re.test(subExpr, nthDayOfMonthRegex) => {
+  | subExpr when Js.Re.test(subExpr, nthDayOfWeekInMonthRegex) => {
       let arr = Js.String.split("#", subExpr);
       let (day, nth) =
         try (
@@ -230,7 +215,7 @@ let parseDaysOfWeekSubExpr =
         ) {
         | Failure(_) => raise(MalformedCronExpression)
         };
-      `NthDayOfMonth((day, nth));
+      `NthDayOfWeekInMonth((day, nth));
     }
   | subExpr => parseSubExpr(subExpr, 0, 6, dayNames);
 
@@ -247,14 +232,15 @@ let parseYearsSubExpr = subExpr => {
     };
   switch (fieldToken, stepToken) {
   | (WildcardToken, None) => `Wildcard
-  | (WildcardToken, Some(step)) => `OpenInterval((None, None, step))
+  | (WildcardToken, Some(step)) => `UnboundedInterval((None, None, step))
   | (RangeToken(Some(a), Some(b)), None) => `Values(range(a, b))
   | (RangeToken(Some(a), Some(b)), Some(step)) =>
     `Values(rangeBy(a, b, ~step))
-  | (RangeToken(a, b), Some(step)) => `OpenInterval((a, b, step))
-  | (RangeToken(a, b), None) => `OpenInterval((a, b, 1))
+  | (RangeToken(a, b), Some(step)) => `UnboundedInterval((a, b, step))
+  | (RangeToken(a, b), None) => `UnboundedInterval((a, b, 1))
   | (NumberToken(n), None) => `Values([|n|])
-  | (NumberToken(n), Some(step)) => `OpenInterval((Some(n), None, step))
+  | (NumberToken(n), Some(step)) =>
+    `UnboundedInterval((Some(n), None, step))
   | (CommaSeparatedListToken(lst), None) =>
     `Values(lst |> Js.Array.sortInPlace)
   | (CommaSeparatedListToken(_), Some(_)) => raise(MalformedCronExpression)
@@ -271,25 +257,18 @@ let parse = str =>
     |> Belt.List.fromArray
   ) {
   | [minutes, hours, daysOfMonth, months, daysOfWeek, ...rest]
-      when Belt.List.length(rest) <= 1 =>
-    let daysOfWeek = parseDaysOfWeekSubExpr(daysOfWeek);
-    let daysOfMonth = parseDaysOfMonthSubExpr(daysOfMonth);
-    if (daysOfMonth != `Wildcard && daysOfWeek != `Wildcard) {
-      raise(MalformedCronExpression);
-    } else {
-      {
-        minutes: parseSubExpr(minutes, 0, 59, [||]),
-        hours: parseSubExpr(hours, 0, 23, [||]),
-        daysOfMonth,
-        months: parseSubExpr(months, 1, 12, monthNames),
-        daysOfWeek,
-        years:
-          switch (Belt.List.head(rest)) {
-          | Some(years) => parseYearsSubExpr(years)
-          | None => `Wildcard
-          },
-        expression: str,
-      };
-    };
+      when Belt.List.length(rest) <= 1 => {
+      minutes: parseSubExpr(minutes, 0, 59, [||]),
+      hours: parseSubExpr(hours, 0, 23, [||]),
+      daysOfMonth: parseDaysOfMonthSubExpr(daysOfMonth),
+      months: parseSubExpr(months, 1, 12, monthNames),
+      daysOfWeek: parseDaysOfWeekSubExpr(daysOfWeek),
+      years:
+        switch (Belt.List.head(rest)) {
+        | Some(years) => parseYearsSubExpr(years)
+        | None => `Wildcard
+        },
+      expression: str,
+    }
   | _ => raise(MalformedCronExpression)
   };
