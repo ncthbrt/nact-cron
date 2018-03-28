@@ -2,28 +2,76 @@
 'use strict';
 
 var Curry = require("bs-platform/lib/js/curry.js");
-var CamlinternalOO = require("bs-platform/lib/js/camlinternalOO.js");
+var Belt_List = require("bs-platform/lib/js/belt_List.js");
 
 var ScheduleId = /* module */[];
 
-var class_tables = [
-  0,
-  0,
-  0
-];
-
-function update(_, _$1, _$2) {
-  if (!class_tables[0]) {
-    var $$class = CamlinternalOO.create_table(0);
-    var env_init = function () {
-      return CamlinternalOO.create_object_opt(0, $$class);
-    };
-    CamlinternalOO.init_class($$class);
-    class_tables[0] = env_init;
+function updateYear(param, param$1, _, state) {
+  var match = +(param[/* year */0] === param$1[/* year */0]);
+  if (match !== 0) {
+    return state;
+  } else {
+    var newrecord = state.slice();
+    newrecord[/* years */2] = state[/* years */2];
+    return newrecord;
   }
-  return Curry._1(class_tables[0], 0);
+}
+
+function updateMonth(_, _$1, _$2, state) {
+  return state;
+}
+
+function updateDaysOfMonth(_, _$1, _$2, state) {
+  return state;
+}
+
+function updateDaysOfWeek(_, _$1, _$2, state) {
+  return state;
+}
+
+function updateHours(_, _$1, _$2, state) {
+  return state;
+}
+
+function updateMinutes(_, _$1, _$2, state) {
+  return state;
+}
+
+function thread(prevState, prevTime, time, daysInMonth, functions) {
+  return Belt_List.reduce(functions, prevState, (function (state, f) {
+                return Curry._4(f, prevTime, time, daysInMonth, state);
+              }));
+}
+
+function update(prevState, prevTime, time, daysInMonth) {
+  return thread(prevState, prevTime, time, daysInMonth, /* :: */[
+              updateYear,
+              /* :: */[
+                updateMonth,
+                /* :: */[
+                  updateDaysOfMonth,
+                  /* :: */[
+                    updateDaysOfWeek,
+                    /* :: */[
+                      updateHours,
+                      /* :: */[
+                        updateMinutes,
+                        /* [] */0
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ]);
 }
 
 exports.ScheduleId = ScheduleId;
+exports.updateYear = updateYear;
+exports.updateMonth = updateMonth;
+exports.updateDaysOfMonth = updateDaysOfMonth;
+exports.updateDaysOfWeek = updateDaysOfWeek;
+exports.updateHours = updateHours;
+exports.updateMinutes = updateMinutes;
+exports.thread = thread;
 exports.update = update;
 /* No side effect */
