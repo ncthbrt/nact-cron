@@ -2,7 +2,6 @@
 'use strict';
 
 var Jest = require("@glennsl/bs-jest/src/jest.js");
-var Belt_Array = require("bs-platform/lib/js/belt_Array.js");
 var CronExpression$NactPatterns = require("../src/CronExpression.bs.js");
 
 function testExpression($staropt$star, $staropt$star$1, $staropt$star$2, $staropt$star$3, $staropt$star$4, $staropt$star$5, expression) {
@@ -40,26 +39,39 @@ testExpression(/* Some */[/* `Values */[
         /* int array */[0]
       ]], /* None */0, /* None */0, /* None */0, /* None */0, /* None */0, "0 * * * *");
 
-testExpression(/* Some */[/* `Values */[
-        72054786,
-        Belt_Array.range(0, 10)
+testExpression(/* Some */[/* `Interval */[
+        36582757,
+        /* tuple */[
+          0,
+          10,
+          1
+        ]
       ]], /* None */0, /* None */0, /* None */0, /* None */0, /* None */0, "0-10 * * * *");
 
-testExpression(/* None */0, /* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
-        72054786,
-        /* int array */[
+testExpression(/* None */0, /* None */0, /* None */0, /* None */0, /* Some */[/* `Interval */[
+        36582757,
+        /* tuple */[
           0,
-          2,
-          4,
-          6
+          6,
+          2
         ]
       ]], /* None */0, "* * * * */2");
 
-testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
-        72054786,
-        /* int array */[
+testExpression(/* None */0, /* None */0, /* None */0, /* None */0, /* Some */[/* `Interval */[
+        36582757,
+        /* tuple */[
+          0,
+          6,
+          2
+        ]
+      ]], /* None */0, "* * * * 0/2");
+
+testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Interval */[
+        36582757,
+        /* tuple */[
           9,
-          11
+          12,
+          2
         ]
       ]], /* None */0, /* None */0, "* * * 9-12/2 *");
 
@@ -151,12 +163,12 @@ testExpression(/* Some */[/* `Values */[
       ]], /* None */0, /* None */0, /* Some */[/* `LastDayOfWeekInMonth */[
         -1029051830,
         6
-      ]], /* Some */[/* `Values */[
-        72054786,
-        /* int array */[
-          2015,
-          2016,
-          2017
+      ]], /* Some */[/* `Interval */[
+        36582757,
+        /* tuple */[
+          /* Some */[2015],
+          /* Some */[2017],
+          1
         ]
       ]], "0 18 ? * 6L 2015-2017");
 
@@ -168,38 +180,40 @@ testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
         ]
       ]], /* None */0, /* None */0, "* * * DEC,JAN *");
 
-testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
-        72054786,
-        /* int array */[
+testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Interval */[
+        36582757,
+        /* tuple */[
           1,
-          2,
-          3
+          3,
+          1
         ]
       ]], /* None */0, /* None */0, "* * * JAN-MAR *");
 
-testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
-        72054786,
-        /* int array */[
+testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Interval */[
+        36582757,
+        /* tuple */[
           1,
-          3,
-          5
+          5,
+          2
         ]
       ]], /* None */0, /* None */0, "* * * JAN-MAY/2 *");
 
-testExpression(/* None */0, /* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
-        72054786,
-        /* array */[
+testExpression(/* None */0, /* None */0, /* None */0, /* None */0, /* Some */[/* `Interval */[
+        36582757,
+        /* tuple */[
           1,
-          2,
-          3,
-          4,
-          5
+          5,
+          1
         ]
       ]], /* None */0, "* * * * MON-FRI");
 
-testExpression(/* None */0, /* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
-        72054786,
-        Belt_Array.rangeBy(2, 6, 2)
+testExpression(/* None */0, /* None */0, /* None */0, /* None */0, /* Some */[/* `Interval */[
+        36582757,
+        /* tuple */[
+          2,
+          6,
+          2
+        ]
       ]], /* None */0, "* * * * TUE-/2");
 
 testExpression(/* None */0, /* None */0, /* Some */[/* `NearestWeekday */[
@@ -258,9 +272,13 @@ testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
           1,
           12
         ]
-      ]], /* None */0, /* Some */[/* `Values */[
-        72054786,
-        Belt_Array.rangeBy(2000, 2020, 3)
+      ]], /* None */0, /* Some */[/* `Interval */[
+        36582757,
+        /* tuple */[
+          /* Some */[2000],
+          /* Some */[2020],
+          3
+        ]
       ]], "* * * DEC,JAN * 2000-2020/3");
 
 testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
@@ -269,8 +287,8 @@ testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
           1,
           12
         ]
-      ]], /* None */0, /* Some */[/* `UnboundedInterval */[
-        -1055288279,
+      ]], /* None */0, /* Some */[/* `Interval */[
+        36582757,
         /* tuple */[
           /* Some */[2000],
           /* None */0,
@@ -284,8 +302,8 @@ testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
           1,
           12
         ]
-      ]], /* None */0, /* Some */[/* `UnboundedInterval */[
-        -1055288279,
+      ]], /* None */0, /* Some */[/* `Interval */[
+        36582757,
         /* tuple */[
           /* Some */[2000],
           /* None */0,
@@ -299,8 +317,8 @@ testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
           1,
           12
         ]
-      ]], /* None */0, /* Some */[/* `UnboundedInterval */[
-        -1055288279,
+      ]], /* None */0, /* Some */[/* `Interval */[
+        36582757,
         /* tuple */[
           /* Some */[2000],
           /* None */0,
@@ -314,8 +332,8 @@ testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
           1,
           12
         ]
-      ]], /* None */0, /* Some */[/* `UnboundedInterval */[
-        -1055288279,
+      ]], /* None */0, /* Some */[/* `Interval */[
+        36582757,
         /* tuple */[
           /* None */0,
           /* Some */[2020],
@@ -329,8 +347,8 @@ testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
           1,
           12
         ]
-      ]], /* None */0, /* Some */[/* `UnboundedInterval */[
-        -1055288279,
+      ]], /* None */0, /* Some */[/* `Interval */[
+        36582757,
         /* tuple */[
           /* None */0,
           /* Some */[2020],
@@ -359,8 +377,19 @@ testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
           1,
           12
         ]
-      ]], /* None */0, /* Some */[/* `UnboundedInterval */[
-        -1055288279,
+      ]], /* None */0, /* Some */[/* `Values */[
+        72054786,
+        /* int array */[2018]
+      ]], "* * * DEC,JAN * 2018");
+
+testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
+        72054786,
+        /* int array */[
+          1,
+          12
+        ]
+      ]], /* None */0, /* Some */[/* `Interval */[
+        36582757,
         /* tuple */[
           /* None */0,
           /* None */0,
@@ -374,8 +403,8 @@ testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
           1,
           12
         ]
-      ]], /* None */0, /* Some */[/* `UnboundedInterval */[
-        -1055288279,
+      ]], /* None */0, /* Some */[/* `Interval */[
+        36582757,
         /* tuple */[
           /* None */0,
           /* None */0,
@@ -389,8 +418,8 @@ testExpression(/* None */0, /* None */0, /* None */0, /* Some */[/* `Values */[
           1,
           12
         ]
-      ]], /* None */0, /* Some */[/* `UnboundedInterval */[
-        -1055288279,
+      ]], /* None */0, /* Some */[/* `Interval */[
+        36582757,
         /* tuple */[
           /* None */0,
           /* Some */[2020],
@@ -410,7 +439,23 @@ testMalformedExpression("*");
 
 testMalformedExpression("* * * DEC,JAN * 2020-/2/2");
 
+testMalformedExpression("* * * SEPT *");
+
+testMalformedExpression("* * * * TUES");
+
+testMalformedExpression("* * * * * 2a12");
+
+testMalformedExpression("* * * * WED#3rd");
+
+testMalformedExpression("* * * * */D");
+
+testMalformedExpression("* * * * * */D");
+
 testMalformedExpression("* * * DEC-/2/3 * *");
+
+testMalformedExpression("* * * * WED#3#3");
+
+testMalformedExpression("* * * * WED--");
 
 testMalformedExpression("* * * DEC,JAN * 2020,2021/2");
 

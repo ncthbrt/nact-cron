@@ -1,32 +1,30 @@
 type day = int;
 
-type startYear = int;
-
-type endYear = int;
-
 type step = int;
 
 type t = {
-  minutes: [ | `Values(array(int)) | `Wildcard],
-  hours: [ | `Values(array(int)) | `Wildcard],
+  minutes: [ | `Values(array(int)) | `Wildcard | `Interval(int, int, step)],
+  hours: [ | `Values(array(int)) | `Wildcard | `Interval(int, int, step)],
   daysOfMonth: [
     | `Values(array(int))
     | `Wildcard
+    | `Interval(int, int, step)
     | `DaysBeforeEndOfMonth(int)
     | `NearestWeekday(int)
     | `LastWeekdayOfMonth
   ],
-  months: [ | `Values(array(int)) | `Wildcard],
+  months: [ | `Values(array(int)) | `Interval(int, int, step) | `Wildcard],
   daysOfWeek: [
     | `Values(array(int))
     | `Wildcard
+    | `Interval(int, int, step)
     | `LastDayOfWeekInMonth(int)
     | `NthDayOfWeekInMonth(day, int)
   ],
   years: [
     | `Values(array(int))
     | `Wildcard
-    | `UnboundedInterval(option(startYear), option(endYear), step)
+    | `Interval(option(int), option(int), step)
   ],
   expression: string,
 };

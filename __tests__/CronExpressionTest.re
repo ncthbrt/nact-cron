@@ -38,11 +38,13 @@ testExpression("* * * * *");
 
 testExpression(~minutes=`Values([|0|]), "0 * * * *");
 
-testExpression(~minutes=`Values(Belt.Array.range(0, 10)), "0-10 * * * *");
+testExpression(~minutes=`Interval((0, 10, 1)), "0-10 * * * *");
 
-testExpression(~daysOfWeek=`Values([|0, 2, 4, 6|]), "* * * * */2");
+testExpression(~daysOfWeek=`Interval((0, 6, 2)), "* * * * */2");
 
-testExpression(~months=`Values([|9, 11|]), "* * * 9-12/2 *");
+testExpression(~daysOfWeek=`Interval((0, 6, 2)), "* * * * 0/2");
+
+testExpression(~months=`Interval((9, 12, 2)), "* * * 9-12/2 *");
 
 testExpression("* * * ? *");
 
@@ -88,22 +90,19 @@ testExpression(
   ~minutes=`Values([|0|]),
   ~hours=`Values([|18|]),
   ~daysOfWeek=`LastDayOfWeekInMonth(6),
-  ~years=`Values([|2015, 2016, 2017|]),
+  ~years=`Interval((Some(2015), Some(2017), 1)),
   "0 18 ? * 6L 2015-2017",
 );
 
 testExpression(~months=`Values([|1, 12|]), "* * * DEC,JAN *");
 
-testExpression(~months=`Values([|1, 2, 3|]), "* * * JAN-MAR *");
+testExpression(~months=`Interval((1, 3, 1)), "* * * JAN-MAR *");
 
-testExpression(~months=`Values([|1, 3, 5|]), "* * * JAN-MAY/2 *");
+testExpression(~months=`Interval((1, 5, 2)), "* * * JAN-MAY/2 *");
 
-testExpression(~daysOfWeek=`Values([|1, 2, 3, 4, 5|]), "* * * * MON-FRI");
+testExpression(~daysOfWeek=`Interval((1, 5, 1)), "* * * * MON-FRI");
 
-testExpression(
-  ~daysOfWeek=`Values(Belt.Array.rangeBy(~step=2, 2, 6)),
-  "* * * * TUE-/2",
-);
+testExpression(~daysOfWeek=`Interval((2, 6, 2)), "* * * * TUE-/2");
 
 testExpression(~daysOfMonth=`NearestWeekday(15), "* * 15W * *");
 
@@ -128,37 +127,37 @@ testExpression(~daysOfMonth=`LastWeekdayOfMonth, "* * LW * *");
 
 testExpression(
   ~months=`Values([|1, 12|]),
-  ~years=`Values(Belt.Array.rangeBy(~step=3, 2000, 2020)),
+  ~years=`Interval((Some(2000), Some(2020), 3)),
   "* * * DEC,JAN * 2000-2020/3",
 );
 
 testExpression(
   ~months=`Values([|1, 12|]),
-  ~years=`UnboundedInterval((Some(2000), None, 3)),
+  ~years=`Interval((Some(2000), None, 3)),
   "* * * DEC,JAN * 2000-/3",
 );
 
 testExpression(
   ~months=`Values([|1, 12|]),
-  ~years=`UnboundedInterval((Some(2000), None, 3)),
+  ~years=`Interval((Some(2000), None, 3)),
   "* * * DEC,JAN * 2000/3",
 );
 
 testExpression(
   ~months=`Values([|1, 12|]),
-  ~years=`UnboundedInterval((Some(2000), None, 1)),
+  ~years=`Interval((Some(2000), None, 1)),
   "* * * DEC,JAN * 2000-",
 );
 
 testExpression(
   ~months=`Values([|1, 12|]),
-  ~years=`UnboundedInterval((None, Some(2020), 1)),
+  ~years=`Interval((None, Some(2020), 1)),
   "* * * DEC,JAN * -2020",
 );
 
 testExpression(
   ~months=`Values([|1, 12|]),
-  ~years=`UnboundedInterval((None, Some(2020), 2)),
+  ~years=`Interval((None, Some(2020), 2)),
   "* * * DEC,JAN * -2020/2",
 );
 
@@ -170,19 +169,25 @@ testExpression(
 
 testExpression(
   ~months=`Values([|1, 12|]),
-  ~years=`UnboundedInterval((None, None, 2)),
+  ~years=`Values([|2018|]),
+  "* * * DEC,JAN * 2018",
+);
+
+testExpression(
+  ~months=`Values([|1, 12|]),
+  ~years=`Interval((None, None, 2)),
   "* * * DEC,JAN * */2",
 );
 
 testExpression(
   ~months=`Values([|1, 12|]),
-  ~years=`UnboundedInterval((None, None, 2)),
+  ~years=`Interval((None, None, 2)),
   "* * * DEC,JAN * */2",
 );
 
 testExpression(
   ~months=`Values([|1, 12|]),
-  ~years=`UnboundedInterval((None, Some(2020), 2)),
+  ~years=`Interval((None, Some(2020), 2)),
   "* * * DEC,JAN * -2020/2",
 );
 
@@ -201,7 +206,29 @@ testMalformedExpression("*");
 /* Too many steps */
 testMalformedExpression("* * * DEC,JAN * 2020-/2/2");
 
+/* Misspelt month */
+testMalformedExpression("* * * SEPT *");
+
+/* Misspelt day */
+testMalformedExpression("* * * * TUES");
+
+/* Nan Year */
+testMalformedExpression("* * * * * 2a12");
+
+/* NaN nth */
+testMalformedExpression("* * * * WED#3rd");
+
+/* NaN step */
+testMalformedExpression("* * * * */D");
+
+/* NaN step */
+testMalformedExpression("* * * * * */D");
+
 testMalformedExpression("* * * DEC-/2/3 * *");
+
+testMalformedExpression("* * * * WED#3#3");
+
+testMalformedExpression("* * * * WED--");
 
 /* Adding a step to comma separated list, year */
 testMalformedExpression("* * * DEC,JAN * 2020,2021/2");

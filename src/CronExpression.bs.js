@@ -111,23 +111,6 @@ function isNumber(str) {
   }
 }
 
-function toCommaSeparatedList(str, substitute) {
-  var __x = str.split(",");
-  return Belt_Array.map(__x, (function (i) {
-                try {
-                  return Caml_format.caml_int_of_string(Curry._1(substitute, i));
-                }
-                catch (raw_exn){
-                  var exn = Js_exn.internalToOCamlException(raw_exn);
-                  if (exn[0] === Caml_builtin_exceptions.failure) {
-                    throw MalformedCronExpression;
-                  } else {
-                    throw exn;
-                  }
-                }
-              }));
-}
-
 function parseToken(field, substitutions) {
   var substitute$1 = function (param) {
     return substitute(substitutions, param);
@@ -147,11 +130,22 @@ function parseToken(field, substitutions) {
             case "?" : 
                 return /* WildcardToken */0;
             default:
-              if (isNumber(substitute(substitutions, n))) {
-                return /* NumberToken */Block.__(2, [Caml_format.caml_int_of_string(substitute(substitutions, n))]);
-              } else {
-                return /* CommaSeparatedListToken */Block.__(1, [toCommaSeparatedList(n, substitute$1)]);
-              }
+              var str = n;
+              var substitute$2 = substitute$1;
+              var __x = str.split(",");
+              return /* CommaSeparatedArrayToken */Block.__(1, [Belt_Array.map(__x, (function (i) {
+                                try {
+                                  return Caml_format.caml_int_of_string(Curry._1(substitute$2, i));
+                                }
+                                catch (raw_exn){
+                                  var exn = Js_exn.internalToOCamlException(raw_exn);
+                                  if (exn[0] === Caml_builtin_exceptions.failure) {
+                                    throw MalformedCronExpression;
+                                  } else {
+                                    throw exn;
+                                  }
+                                }
+                              }))]);
           }
       case 2 : 
           var start = match[0];
@@ -159,7 +153,7 @@ function parseToken(field, substitutions) {
           var exit$1 = 0;
           var match$1 = match[1];
           if (match$1 === "" && isNumber(substitute(substitutions, start))) {
-            return /* RangeToken */Block.__(0, [
+            return /* IntervalToken */Block.__(0, [
                       /* Some */[Caml_format.caml_int_of_string(substitute(substitutions, start))],
                       /* None */0
                     ]);
@@ -170,7 +164,7 @@ function parseToken(field, substitutions) {
             if (start === "") {
               var end_ = match[1];
               if (isNumber(substitute(substitutions, end_))) {
-                return /* RangeToken */Block.__(0, [
+                return /* IntervalToken */Block.__(0, [
                           /* None */0,
                           /* Some */[Caml_format.caml_int_of_string(substitute(substitutions, end_))]
                         ]);
@@ -184,7 +178,7 @@ function parseToken(field, substitutions) {
           if (exit === 1) {
             var end_$1 = match[1];
             if (isNumber(substitute(substitutions, start)) && isNumber(substitute(substitutions, end_$1))) {
-              return /* RangeToken */Block.__(0, [
+              return /* IntervalToken */Block.__(0, [
                         /* Some */[Caml_format.caml_int_of_string(substitute(substitutions, start))],
                         /* Some */[Caml_format.caml_int_of_string(substitute(substitutions, end_$1))]
                       ]);
@@ -252,63 +246,68 @@ function parseSubExpr(subExpr, start, end_, substitutions) {
   var fieldToken = match$1[0];
   if (typeof fieldToken === "number") {
     if (stepToken) {
-      return /* `Values */[
-              72054786,
-              Belt_Array.rangeBy(start, end_, stepToken[0])
+      return /* `Interval */[
+              36582757,
+              /* tuple */[
+                start,
+                end_,
+                stepToken[0]
+              ]
             ];
     } else {
       return /* Wildcard */46765562;
     }
+  } else if (fieldToken.tag) {
+    var lst = fieldToken[0];
+    if (stepToken) {
+      if (lst.length !== 1) {
+        throw MalformedCronExpression;
+      } else {
+        var n = lst[0];
+        if (inRange(start, end_, n)) {
+          return /* `Interval */[
+                  36582757,
+                  /* tuple */[
+                    n,
+                    end_,
+                    stepToken[0]
+                  ]
+                ];
+        } else {
+          throw MalformedCronExpression;
+        }
+      }
+    } else if (Belt_Array.every(lst, (function (param) {
+              return inRange(start, end_, param);
+            }))) {
+      return /* `Values */[
+              72054786,
+              lst.sort()
+            ];
+    } else {
+      throw MalformedCronExpression;
+    }
   } else {
-    switch (fieldToken.tag | 0) {
-      case 0 : 
-          var b = fieldToken[1];
-          var a = fieldToken[0];
-          if (stepToken) {
-            return /* `Values */[
-                    72054786,
-                    Belt_Array.rangeBy(Belt_Option.getWithDefault(a, start), Belt_Option.getWithDefault(b, end_), stepToken[0])
-                  ];
-          } else {
-            return /* `Values */[
-                    72054786,
-                    Belt_Array.range(Belt_Option.getWithDefault(a, start), Belt_Option.getWithDefault(b, end_))
-                  ];
-          }
-      case 1 : 
-          var lst = fieldToken[0];
-          if (stepToken) {
-            throw MalformedCronExpression;
-          } else if (Belt_Array.every(lst, (function (param) {
-                    return inRange(start, end_, param);
-                  }))) {
-            return /* `Values */[
-                    72054786,
-                    lst.sort()
-                  ];
-          } else {
-            throw MalformedCronExpression;
-          }
-      case 2 : 
-          var n = fieldToken[0];
-          if (stepToken) {
-            if (n <= end_) {
-              return /* `Values */[
-                      72054786,
-                      Belt_Array.rangeBy(n, end_, stepToken[0])
-                    ];
-            } else {
-              throw MalformedCronExpression;
-            }
-          } else if (inRange(start, end_, n)) {
-            return /* `Values */[
-                    72054786,
-                    /* int array */[n]
-                  ];
-          } else {
-            throw MalformedCronExpression;
-          }
-      
+    var b = fieldToken[1];
+    var a = fieldToken[0];
+    if (stepToken) {
+      return /* `Interval */[
+              36582757,
+              /* tuple */[
+                Belt_Option.getWithDefault(a, start),
+                Belt_Option.getWithDefault(b, end_),
+                stepToken[0]
+              ]
+            ];
+    } else {
+      return /* `Interval */[
+              36582757,
+              /* tuple */[
+                Belt_Option.getWithDefault(a, start),
+                Belt_Option.getWithDefault(b, end_),
+                1
+              ]
+            ];
     }
   }
 }
@@ -426,8 +425,8 @@ function parseYearsSubExpr(subExpr) {
   var fieldToken = match$1[0];
   if (typeof fieldToken === "number") {
     if (stepToken) {
-      return /* `UnboundedInterval */[
-              -1055288279,
+      return /* `Interval */[
+              36582757,
               /* tuple */[
                 /* None */0,
                 /* None */0,
@@ -437,84 +436,37 @@ function parseYearsSubExpr(subExpr) {
     } else {
       return /* Wildcard */46765562;
     }
-  } else {
-    switch (fieldToken.tag | 0) {
-      case 0 : 
-          var a = fieldToken[0];
-          var exit = 0;
-          if (a) {
-            var match$2 = fieldToken[1];
-            if (match$2) {
-              var b = match$2[0];
-              var a$1 = a[0];
-              if (stepToken) {
-                return /* `Values */[
-                        72054786,
-                        Belt_Array.rangeBy(a$1, b, stepToken[0])
-                      ];
-              } else {
-                return /* `Values */[
-                        72054786,
-                        Belt_Array.range(a$1, b)
-                      ];
-              }
-            } else {
-              exit = 1;
-            }
-          } else {
-            exit = 1;
-          }
-          if (exit === 1) {
-            var b$1 = fieldToken[1];
-            if (stepToken) {
-              return /* `UnboundedInterval */[
-                      -1055288279,
-                      /* tuple */[
-                        a,
-                        b$1,
-                        stepToken[0]
-                      ]
-                    ];
-            } else {
-              return /* `UnboundedInterval */[
-                      -1055288279,
-                      /* tuple */[
-                        a,
-                        b$1,
-                        1
-                      ]
-                    ];
-            }
-          }
-          break;
-      case 1 : 
-          if (stepToken) {
-            throw MalformedCronExpression;
-          } else {
-            return /* `Values */[
-                    72054786,
-                    fieldToken[0].sort()
-                  ];
-          }
-      case 2 : 
-          var n = fieldToken[0];
-          if (stepToken) {
-            return /* `UnboundedInterval */[
-                    -1055288279,
-                    /* tuple */[
-                      /* Some */[n],
-                      /* None */0,
-                      stepToken[0]
-                    ]
-                  ];
-          } else {
-            return /* `Values */[
-                    72054786,
-                    /* int array */[n]
-                  ];
-          }
-      
+  } else if (fieldToken.tag) {
+    var lst = fieldToken[0];
+    if (stepToken) {
+      if (lst.length !== 1) {
+        throw MalformedCronExpression;
+      } else {
+        var n = lst[0];
+        return /* `Interval */[
+                36582757,
+                /* tuple */[
+                  /* Some */[n],
+                  /* None */0,
+                  stepToken[0]
+                ]
+              ];
+      }
+    } else {
+      return /* `Values */[
+              72054786,
+              lst.sort()
+            ];
     }
+  } else {
+    return /* `Interval */[
+            36582757,
+            /* tuple */[
+              fieldToken[0],
+              fieldToken[1],
+              Belt_Option.getWithDefault(stepToken, 1)
+            ]
+          ];
   }
 }
 
