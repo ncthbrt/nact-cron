@@ -3,8 +3,6 @@ let isInArray = (value, arr) => Belt.Array.some(arr, v => v == value);
 let isInInterval = (value, start, end_, step) =>
   (value - start) mod step == 0 && value <= end_;
 
-let isWeekday = day => day >= 1 && day <= 5;
-
 let isInYear = currentYear =>
   fun
   | `Values(arr) => isInArray(currentYear, arr)
@@ -36,18 +34,18 @@ let isInHour = isInExpr;
 
 let isInMonth = isInExpr;
 
-let isInDayOfWeek = (currentDayOfWeek, currentDayOfMonth) =>
+let isInDayOfWeek = (~currentDayOfMonth, ~currentDayOfWeek, ~daysInMonth) =>
   fun
-  | `LastDayOfWeekInMonth(_) => true
+  | `LastDayOfWeekInMonth(day) =>
+    currentDayOfWeek == day && currentDayOfMonth + 7 > daysInMonth
   | `NthDayOfWeekInMonth(dayOfWeek, n) =>
-    currentDayOfWeek == dayOfWeek && currentDayOfMonth / 7 == n
+    currentDayOfWeek == dayOfWeek && currentDayOfMonth / 7 + 1 == n
   | #commonCronExpr as expr => isInExpr(currentDayOfWeek, expr);
 
 let isNearestWeekday =
     (currentDayOfMonth, daysInMonth, scheduledDayOfMonth, currentDayOfWeek) => {
-  let startDayOfWeekOfMonth = currentDayOfWeek - currentDayOfMonth mod 7 + 1;
   let dayOfWeekOfScheduledDay =
-    (startDayOfWeekOfMonth + scheduledDayOfMonth) mod 7;
+    (currentDayOfWeek + (scheduledDayOfMonth - currentDayOfMonth) + 7) mod 7;
   let daysInMonthRemaining = daysInMonth - scheduledDayOfMonth;
   let daysToNearestWeekdayFromScheduledDay =
     switch (dayOfWeekOfScheduledDay) {
@@ -72,7 +70,7 @@ let isLastWeekdayOfMonth = (currentDayOfMonth, daysInMonth, currentDayOfWeek) =>
   currentDayOfMonth == dayOfMonthOfLastWeekday;
 };
 
-let isInDayOfMonth = (currentDayOfMonth, daysInMonth, currentDayOfWeek) =>
+let isInDayOfMonth = (~currentDayOfMonth, ~currentDayOfWeek, ~daysInMonth) =>
   fun
   | `DaysBeforeEndOfMonth(daysBefore) =>
     daysInMonth - currentDayOfMonth == daysBefore

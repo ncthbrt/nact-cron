@@ -20,14 +20,6 @@ function isInInterval(value, start, end_, step) {
   }
 }
 
-function isWeekday(day) {
-  if (day >= 1) {
-    return +(day <= 5);
-  } else {
-    return /* false */0;
-  }
-}
-
 function isInYear(currentYear, param) {
   if (typeof param === "number") {
     return /* true */1;
@@ -66,7 +58,7 @@ function isInExpr(current, param) {
   }
 }
 
-function isInDayOfWeek(currentDayOfWeek, currentDayOfMonth, expr) {
+function isInDayOfWeek(currentDayOfMonth, currentDayOfWeek, daysInMonth, expr) {
   if (typeof expr === "number") {
     return isInExpr(currentDayOfWeek, expr);
   } else {
@@ -74,13 +66,15 @@ function isInDayOfWeek(currentDayOfWeek, currentDayOfMonth, expr) {
     if (variant !== -339304170) {
       if (variant >= -1029051829) {
         return isInExpr(currentDayOfWeek, expr);
+      } else if (currentDayOfWeek === expr[1]) {
+        return +((currentDayOfMonth + 7 | 0) > daysInMonth);
       } else {
-        return /* true */1;
+        return /* false */0;
       }
     } else {
       var match = expr[1];
       if (currentDayOfWeek === match[0]) {
-        return +((currentDayOfMonth / 7 | 0) === match[1]);
+        return +(((currentDayOfMonth / 7 | 0) + 1 | 0) === match[1]);
       } else {
         return /* false */0;
       }
@@ -88,36 +82,21 @@ function isInDayOfWeek(currentDayOfWeek, currentDayOfMonth, expr) {
   }
 }
 
-function isNearestWeekday(currentDayOfMonth, daysInMonth, scheduledDayOfMonth, currentDayOfWeek) {
-  var startDayOfWeekOfMonth = (currentDayOfWeek - currentDayOfMonth % 7 | 0) + 1 | 0;
-  var dayOfWeekOfScheduledDay = (startDayOfWeekOfMonth + scheduledDayOfMonth | 0) % 7;
-  var daysInMonthRemaining = daysInMonth - scheduledDayOfMonth | 0;
-  var daysToNearestWeekdayFromScheduledDay;
-  if (dayOfWeekOfScheduledDay !== 0) {
-    daysToNearestWeekdayFromScheduledDay = dayOfWeekOfScheduledDay !== 6 ? 0 : -1;
-  } else {
-    var match = +(daysInMonthRemaining >= 1);
-    daysToNearestWeekdayFromScheduledDay = match !== 0 ? 1 : -2;
-  }
-  return +((daysToNearestWeekdayFromScheduledDay + scheduledDayOfMonth | 0) === currentDayOfMonth);
-}
-
-function isLastWeekdayOfMonth(currentDayOfMonth, daysInMonth, currentDayOfWeek) {
-  var daysInMonthRemaining = daysInMonth - currentDayOfMonth | 0;
-  var dayOfWeekAtMonthEnd = (currentDayOfWeek + daysInMonthRemaining | 0) % 7;
-  var daysFromMonthEndToNearestWeekday = dayOfWeekAtMonthEnd !== 0 ? (
-      dayOfWeekAtMonthEnd !== 6 ? 0 : 1
-    ) : 2;
-  var dayOfMonthOfLastWeekday = daysInMonth - daysFromMonthEndToNearestWeekday | 0;
-  return +(currentDayOfMonth === dayOfMonthOfLastWeekday);
-}
-
-function isInDayOfMonth(currentDayOfMonth, daysInMonth, currentDayOfWeek, expr) {
+function isInDayOfMonth(currentDayOfMonth, currentDayOfWeek, daysInMonth, expr) {
   if (typeof expr === "number") {
     if (expr >= 46765562) {
       return isInExpr(currentDayOfMonth, expr);
     } else {
-      return isLastWeekdayOfMonth(currentDayOfMonth, daysInMonth, currentDayOfWeek);
+      var currentDayOfMonth$1 = currentDayOfMonth;
+      var daysInMonth$1 = daysInMonth;
+      var currentDayOfWeek$1 = currentDayOfWeek;
+      var daysInMonthRemaining = daysInMonth$1 - currentDayOfMonth$1 | 0;
+      var dayOfWeekAtMonthEnd = (currentDayOfWeek$1 + daysInMonthRemaining | 0) % 7;
+      var daysFromMonthEndToNearestWeekday = dayOfWeekAtMonthEnd !== 0 ? (
+          dayOfWeekAtMonthEnd !== 6 ? 0 : 1
+        ) : 2;
+      var dayOfMonthOfLastWeekday = daysInMonth$1 - daysFromMonthEndToNearestWeekday | 0;
+      return +(currentDayOfMonth$1 === dayOfMonthOfLastWeekday);
     }
   } else {
     var variant = expr[0];
@@ -128,7 +107,20 @@ function isInDayOfMonth(currentDayOfMonth, daysInMonth, currentDayOfWeek, expr) 
         return isInExpr(currentDayOfMonth, expr);
       }
     } else {
-      return isNearestWeekday(currentDayOfMonth, daysInMonth, expr[1], currentDayOfWeek);
+      var currentDayOfMonth$2 = currentDayOfMonth;
+      var daysInMonth$2 = daysInMonth;
+      var scheduledDayOfMonth = expr[1];
+      var currentDayOfWeek$2 = currentDayOfWeek;
+      var dayOfWeekOfScheduledDay = ((currentDayOfWeek$2 + (scheduledDayOfMonth - currentDayOfMonth$2 | 0) | 0) + 7 | 0) % 7;
+      var daysInMonthRemaining$1 = daysInMonth$2 - scheduledDayOfMonth | 0;
+      var daysToNearestWeekdayFromScheduledDay;
+      if (dayOfWeekOfScheduledDay !== 0) {
+        daysToNearestWeekdayFromScheduledDay = dayOfWeekOfScheduledDay !== 6 ? 0 : -1;
+      } else {
+        var match = +(daysInMonthRemaining$1 >= 1);
+        daysToNearestWeekdayFromScheduledDay = match !== 0 ? 1 : -2;
+      }
+      return +((daysToNearestWeekdayFromScheduledDay + scheduledDayOfMonth | 0) === currentDayOfMonth$2);
     }
   }
 }
@@ -139,16 +131,10 @@ var isInHour = isInExpr;
 
 var isInMonth = isInExpr;
 
-exports.isInArray = isInArray;
-exports.isInInterval = isInInterval;
-exports.isWeekday = isWeekday;
 exports.isInYear = isInYear;
-exports.isInExpr = isInExpr;
 exports.isInMinute = isInMinute;
 exports.isInHour = isInHour;
 exports.isInMonth = isInMonth;
 exports.isInDayOfWeek = isInDayOfWeek;
-exports.isNearestWeekday = isNearestWeekday;
-exports.isLastWeekdayOfMonth = isLastWeekdayOfMonth;
 exports.isInDayOfMonth = isInDayOfMonth;
 /* No side effect */

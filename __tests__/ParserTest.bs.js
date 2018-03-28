@@ -2,7 +2,7 @@
 'use strict';
 
 var Jest = require("@glennsl/bs-jest/src/jest.js");
-var CronExpression$NactPatterns = require("../src/CronExpression.bs.js");
+var Expression$NactRecron = require("../src/Expression.bs.js");
 
 function testExpression($staropt$star, $staropt$star$1, $staropt$star$2, $staropt$star$3, $staropt$star$4, $staropt$star$5, expression) {
   var minutes = $staropt$star ? $staropt$star[0] : /* Wildcard */46765562;
@@ -20,14 +20,14 @@ function testExpression($staropt$star, $staropt$star$1, $staropt$star$2, $starop
                             /* daysOfWeek */daysOfWeek,
                             /* years */years,
                             /* expression */expression
-                          ], Jest.ExpectJs[/* expect */0](CronExpression$NactPatterns.parse(expression)));
+                          ], Jest.ExpectJs[/* expect */0](Expression$NactRecron.parse(expression)));
               }));
 }
 
 function testMalformedExpression(expression) {
   return Jest.test("The cron expression " + (expression + " should fail to parse"), (function () {
-                return Jest.ExpectJs[/* toThrowException */20](CronExpression$NactPatterns.MalformedCronExpression, Jest.ExpectJs[/* expectFn */1]((function () {
-                                  return CronExpression$NactPatterns.parse(expression);
+                return Jest.ExpectJs[/* toThrowException */20](Expression$NactRecron.MalformedCronExpression, Jest.ExpectJs[/* expectFn */1]((function () {
+                                  return Expression$NactRecron.parse(expression);
                                 }), /* () */0));
               }));
 }

@@ -94,7 +94,7 @@ var dayNames = Belt_Array.concat(__x$2, /* array */[
       ]
     ]);
 
-var MalformedCronExpression = Caml_exceptions.create("CronExpression-NactPatterns.MalformedCronExpression");
+var MalformedCronExpression = Caml_exceptions.create("Expression-NactRecron.MalformedCronExpression");
 
 function isNumber(str) {
   try {

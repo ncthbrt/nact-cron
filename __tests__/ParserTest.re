@@ -2,7 +2,7 @@ open Jest;
 
 open ExpectJs;
 
-open CronExpression;
+open Expression;
 
 let testExpression =
     (
@@ -16,7 +16,7 @@ let testExpression =
     ) =>
   test(
     "The cron expression " ++ expression ++ " should be correctly parsed", () =>
-    expect(CronExpression.parse(expression))
+    expect(Expression.parse(expression))
     |> toEqual({
          minutes,
          hours,
@@ -30,8 +30,8 @@ let testExpression =
 
 let testMalformedExpression = expression =>
   test("The cron expression " ++ expression ++ " should fail to parse", () =>
-    expectFn(() => CronExpression.parse(expression), ())
-    |> toThrowException(CronExpression.MalformedCronExpression)
+    expectFn(() => Expression.parse(expression), ())
+    |> toThrowException(Expression.MalformedCronExpression)
   );
 
 testExpression("* * * * *");
