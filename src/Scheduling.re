@@ -27,56 +27,183 @@ type state('a) = {
   minutes: Belt.List.t(schedule('a)),
 };
 
-let updateYear =
-    ({year: prevYear}, {year}, _, {schedules, years, removalList} as state) =>
-  prevYear == year ? state : {...state, years};
+let (>>) = (f, g, x) => g(f(x));
 
-let updateMonth =
-    ({month: prevMonth}, {month}, _, {months, years, removalList} as state) =>
-  prevMonth == month ? state : state;
+let partitionBy = (lists, criteria) => {
+  let partitions = Belt.List.map(lists, Belt.List.partition(_, criteria));
+  let toKeep = partitions |. Belt.List.map(fst);
+  let toDiscard = partitions |. Belt.List.map(snd);
+  (Belt.List.flatten(toKeep), Belt.List.flatten(toDiscard));
+};
+
+let updateYear = ({year: prevYear}, {year}, _, state) =>
+  if (prevYear == year) {
+    state;
+  } else {
+    let (toKeep, toDiscard) =
+      partitionBy(
+        [
+          state.schedules,
+          state.years,
+          state.months,
+          state.daysOfMonth,
+          state.daysOfWeek,
+          state.hours,
+          state.minutes,
+        ],
+        (Schedule(_, {years}, _)) =>
+        Evaluators.isInYear(year, years)
+      );
+    {
+      ...state,
+      schedules: toDiscard,
+      years: toKeep,
+      months: [],
+      daysOfMonth: [],
+      daysOfWeek: [],
+      hours: [],
+      minutes: [],
+    };
+  };
+
+let updateMonth = ({month: prevMonth}, {month}, _, state) =>
+  if (prevMonth == month) {
+    state;
+  } else {
+    let (toKeep, toDiscard) =
+      partitionBy(
+        [
+          state.years,
+          state.months,
+          state.daysOfMonth,
+          state.daysOfWeek,
+          state.hours,
+          state.minutes,
+        ],
+        (Schedule(_, {months}, _)) =>
+        Evaluators.isInMonth(month, months)
+      );
+    {
+      ...state,
+      years: toDiscard,
+      months: toKeep,
+      daysOfMonth: [],
+      daysOfWeek: [],
+      hours: [],
+      minutes: [],
+    };
+  };
 
 let updateDaysOfMonth =
     (
       {dayOfMonth: prevDayOfMonth},
-      {dayOfMonth},
-      _,
-      {months, daysOfMonth, removalList} as state,
+      {dayOfMonth, dayOfWeek},
+      daysInMonth,
+      state,
     ) =>
-  prevDayOfMonth == dayOfMonth ? state : state;
+  if (prevDayOfMonth == dayOfMonth) {
+    state;
+  } else {
+    let (toKeep, toDiscard) =
+      partitionBy(
+        [
+          state.months,
+          state.daysOfMonth,
+          state.daysOfWeek,
+          state.hours,
+          state.minutes,
+        ],
+        (Schedule(_, {daysOfMonth}, _)) =>
+        Evaluators.isInDayOfMonth(
+          ~currentDayOfMonth=dayOfMonth,
+          ~daysInMonth,
+          ~currentDayOfWeek=dayOfWeek,
+          daysOfMonth,
+        )
+      );
+    {
+      ...state,
+      months: toDiscard,
+      daysOfMonth: toKeep,
+      daysOfWeek: [],
+      hours: [],
+      minutes: [],
+    };
+  };
 
 let updateDaysOfWeek =
     (
       {dayOfWeek: prevDayOfWeek},
-      {dayOfWeek},
-      _,
-      {daysOfMonth, daysOfWeek, removalList} as state,
+      {dayOfWeek, dayOfMonth},
+      daysInMonth,
+      state,
     ) =>
-  prevDayOfWeek == dayOfWeek ? state : state;
+  if (prevDayOfWeek == dayOfWeek) {
+    state;
+  } else {
+    let (toKeep, toDiscard) =
+      partitionBy(
+        [state.daysOfMonth, state.daysOfWeek, state.hours, state.minutes],
+        (Schedule(_, {daysOfWeek}, _)) =>
+        Evaluators.isInDayOfWeek(
+          ~currentDayOfMonth=dayOfMonth,
+          ~daysInMonth,
+          ~currentDayOfWeek=dayOfWeek,
+          daysOfWeek,
+        )
+      );
+    {
+      ...state,
+      daysOfMonth: toDiscard,
+      daysOfWeek: toKeep,
+      hours: [],
+      minutes: [],
+    };
+  };
 
-let updateHours =
-    (
-      {hour: prevHour},
-      {hour},
-      _,
-      {hours, daysOfWeek, removalList} as state,
-    ) =>
-  prevHour == hour ? state : state;
+let updateHours = ({hour: prevHour}, {hour}, _, state) =>
+  if (prevHour == hour) {
+    state;
+  } else {
+    let (toKeep, toDiscard) =
+      partitionBy(
+        [state.daysOfMonth, state.daysOfWeek, state.hours, state.minutes],
+        (Schedule(_, {hours}, _)) =>
+        Evaluators.isInHour(hour, hours)
+      );
+    {...state, daysOfWeek: toDiscard, hours: toKeep, minutes: []};
+  };
 
-let updateMinutes =
-    (
-      {minute: prevMinute},
-      {minute},
-      _,
-      {hours, minutes, removalList} as state,
-    ) =>
-  prevMinute == minute ? state : state;
+let updateMinutes = ({minute: prevMinute}, {minute}, _, state) =>
+  if (prevMinute == minute) {
+    state;
+  } else {
+    let (toKeep, toDiscard) =
+      partitionBy(
+        [state.daysOfMonth, state.daysOfWeek, state.hours, state.minutes],
+        (Schedule(_, {minutes}, _)) =>
+        Evaluators.isInMinute(minute, minutes)
+      );
+    {...state, hours: toDiscard, minutes: toKeep};
+  };
 
 let thread = (prevState, prevTime, time, daysInMonth, functions) =>
   Belt.List.reduce(functions, prevState, (state, f) =>
     f(prevTime, time, daysInMonth, state)
   );
 
-let update = (prevState, prevTime, time, daysInMonth) =>
+let empty: state('a) = {
+  removalList: Belt.Set.Int.empty,
+  schedules: [],
+  years: [],
+  months: [],
+  daysOfMonth: [],
+  daysOfWeek: [],
+  hours: [],
+  minutes: [],
+};
+
+let update = (~prevTime, ~time, ~daysInMonth, prevState) =>
   thread(
     prevState,
     prevTime,
