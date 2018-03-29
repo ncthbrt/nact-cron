@@ -218,3 +218,5 @@ let update = (~prevTime, ~time, ~daysInMonth, prevState) =>
       updateMinutes,
     ],
   );
+
+gi;
