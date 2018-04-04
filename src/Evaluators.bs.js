@@ -58,23 +58,24 @@ function isInExpr(current, param) {
   }
 }
 
-function isInDayOfWeek(currentDayOfMonth, currentDayOfWeek, daysInMonth, expr) {
+function isInDayOfWeek(dayOfMonth, dayOfWeek, daysInMonth, expr) {
   if (typeof expr === "number") {
-    return isInExpr(currentDayOfWeek, expr);
+    return isInExpr(dayOfWeek, expr);
   } else {
     var variant = expr[0];
     if (variant !== -339304170) {
       if (variant >= -1029051829) {
-        return isInExpr(currentDayOfWeek, expr);
-      } else if (currentDayOfWeek === expr[1]) {
-        return +((currentDayOfMonth + 7 | 0) > daysInMonth);
+        return isInExpr(dayOfWeek, expr);
+      } else if (dayOfWeek === expr[1]) {
+        return +((dayOfMonth + 7 | 0) > daysInMonth);
       } else {
         return /* false */0;
       }
     } else {
       var match = expr[1];
-      if (currentDayOfWeek === match[0]) {
-        return +(((currentDayOfMonth / 7 | 0) + 1 | 0) === match[1]);
+      var dayOfWeek$1 = match[0];
+      if (Caml_obj.caml_equal(dayOfWeek$1, dayOfWeek$1)) {
+        return +(((dayOfMonth / 7 | 0) + 1 | 0) === match[1]);
       } else {
         return /* false */0;
       }
@@ -82,36 +83,36 @@ function isInDayOfWeek(currentDayOfMonth, currentDayOfWeek, daysInMonth, expr) {
   }
 }
 
-function isInDayOfMonth(currentDayOfMonth, currentDayOfWeek, daysInMonth, expr) {
+function isInDayOfMonth(dayOfMonth, dayOfWeek, daysInMonth, expr) {
   if (typeof expr === "number") {
     if (expr >= 46765562) {
-      return isInExpr(currentDayOfMonth, expr);
+      return isInExpr(dayOfMonth, expr);
     } else {
-      var currentDayOfMonth$1 = currentDayOfMonth;
+      var currentDayOfMonth = dayOfMonth;
       var daysInMonth$1 = daysInMonth;
-      var currentDayOfWeek$1 = currentDayOfWeek;
-      var daysInMonthRemaining = daysInMonth$1 - currentDayOfMonth$1 | 0;
-      var dayOfWeekAtMonthEnd = (currentDayOfWeek$1 + daysInMonthRemaining | 0) % 7;
+      var currentDayOfWeek = dayOfWeek;
+      var daysInMonthRemaining = daysInMonth$1 - currentDayOfMonth | 0;
+      var dayOfWeekAtMonthEnd = (currentDayOfWeek + daysInMonthRemaining | 0) % 7;
       var daysFromMonthEndToNearestWeekday = dayOfWeekAtMonthEnd !== 0 ? (
           dayOfWeekAtMonthEnd !== 6 ? 0 : 1
         ) : 2;
       var dayOfMonthOfLastWeekday = daysInMonth$1 - daysFromMonthEndToNearestWeekday | 0;
-      return +(currentDayOfMonth$1 === dayOfMonthOfLastWeekday);
+      return +(currentDayOfMonth === dayOfMonthOfLastWeekday);
     }
   } else {
     var variant = expr[0];
     if (variant !== 525980234) {
       if (variant >= 1044297284) {
-        return +((daysInMonth - currentDayOfMonth | 0) === expr[1]);
+        return +((daysInMonth - dayOfMonth | 0) === expr[1]);
       } else {
-        return isInExpr(currentDayOfMonth, expr);
+        return isInExpr(dayOfMonth, expr);
       }
     } else {
-      var currentDayOfMonth$2 = currentDayOfMonth;
+      var currentDayOfMonth$1 = dayOfMonth;
       var daysInMonth$2 = daysInMonth;
       var scheduledDayOfMonth = expr[1];
-      var currentDayOfWeek$2 = currentDayOfWeek;
-      var dayOfWeekOfScheduledDay = ((currentDayOfWeek$2 + (scheduledDayOfMonth - currentDayOfMonth$2 | 0) | 0) + 7 | 0) % 7;
+      var currentDayOfWeek$1 = dayOfWeek;
+      var dayOfWeekOfScheduledDay = ((currentDayOfWeek$1 + (scheduledDayOfMonth - currentDayOfMonth$1 | 0) | 0) + 7 | 0) % 7;
       var daysInMonthRemaining$1 = daysInMonth$2 - scheduledDayOfMonth | 0;
       var daysToNearestWeekdayFromScheduledDay;
       if (dayOfWeekOfScheduledDay !== 0) {
@@ -120,7 +121,7 @@ function isInDayOfMonth(currentDayOfMonth, currentDayOfWeek, daysInMonth, expr) 
         var match = +(daysInMonthRemaining$1 >= 1);
         daysToNearestWeekdayFromScheduledDay = match !== 0 ? 1 : -2;
       }
-      return +((daysToNearestWeekdayFromScheduledDay + scheduledDayOfMonth | 0) === currentDayOfMonth$2);
+      return +((daysToNearestWeekdayFromScheduledDay + scheduledDayOfMonth | 0) === currentDayOfMonth$1);
     }
   }
 }

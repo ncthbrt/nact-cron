@@ -2,9 +2,24 @@
 'use strict';
 
 var Curry = require("bs-platform/lib/js/curry.js");
+var Random = require("bs-platform/lib/js/random.js");
 var Belt_List = require("bs-platform/lib/js/belt_List.js");
-var Belt_SetInt = require("bs-platform/lib/js/belt_SetInt.js");
+var Belt_Option = require("bs-platform/lib/js/belt_Option.js");
 var Evaluators$NactRecron = require("./Evaluators.bs.js");
+
+function fromDate(date) {
+  return /* record */[
+          /* year */date.getUTCFullYear() | 0,
+          /* month */(date.getUTCMonth() | 0) + 1 | 0,
+          /* dayOfMonth */date.getUTCDate() | 0,
+          /* dayOfWeek */date.getUTCDay() | 0,
+          /* hour */date.getUTCHours() | 0,
+          /* minute */date.getUTCMinutes() | 0,
+          /* daysInMonth */(new Date(date.getUTCFullYear(), date.getUTCMonth() + 1.0, 0.0).getUTCDate() | 0) + 1 | 0
+        ];
+}
+
+var Time = /* module */[/* fromDate */fromDate];
 
 function partitionBy(lists, criteria) {
   var partitions = Belt_List.map(lists, (function (__x) {
@@ -22,7 +37,7 @@ function partitionBy(lists, criteria) {
         ];
 }
 
-function updateYear(param, param$1, _, state) {
+function updateYears(param, param$1, state) {
   var year = param$1[/* year */0];
   if (param[/* year */0] === year) {
     return state;
@@ -34,15 +49,12 @@ function updateYear(param, param$1, _, state) {
             /* :: */[
               state[/* months */3],
               /* :: */[
-                state[/* daysOfMonth */4],
+                state[/* days */4],
                 /* :: */[
-                  state[/* daysOfWeek */5],
+                  state[/* hours */5],
                   /* :: */[
-                    state[/* hours */6],
-                    /* :: */[
-                      state[/* minutes */7],
-                      /* [] */0
-                    ]
+                    state[/* minutes */6],
+                    /* [] */0
                   ]
                 ]
               ]
@@ -52,19 +64,18 @@ function updateYear(param, param$1, _, state) {
             return Evaluators$NactRecron.isInYear(year, param[1][/* years */5]);
           }));
     return /* record */[
-            /* removalList */state[/* removalList */0],
+            /* prevTime */state[/* prevTime */0],
             /* schedules */match[1],
             /* years */match[0],
             /* months : [] */0,
-            /* daysOfMonth : [] */0,
-            /* daysOfWeek : [] */0,
+            /* days : [] */0,
             /* hours : [] */0,
             /* minutes : [] */0
           ];
   }
 }
 
-function updateMonth(param, param$1, _, state) {
+function updateMonths(param, param$1, state) {
   var month = param$1[/* month */1];
   if (param[/* month */1] === month) {
     return state;
@@ -74,15 +85,12 @@ function updateMonth(param, param$1, _, state) {
           /* :: */[
             state[/* months */3],
             /* :: */[
-              state[/* daysOfMonth */4],
+              state[/* days */4],
               /* :: */[
-                state[/* daysOfWeek */5],
+                state[/* hours */5],
                 /* :: */[
-                  state[/* hours */6],
-                  /* :: */[
-                    state[/* minutes */7],
-                    /* [] */0
-                  ]
+                  state[/* minutes */6],
+                  /* [] */0
                 ]
               ]
             ]
@@ -91,189 +99,323 @@ function updateMonth(param, param$1, _, state) {
             return Evaluators$NactRecron.isInMonth(month, param[1][/* months */3]);
           }));
     return /* record */[
-            /* removalList */state[/* removalList */0],
+            /* prevTime */state[/* prevTime */0],
             /* schedules */state[/* schedules */1],
             /* years */match[1],
             /* months */match[0],
-            /* daysOfMonth : [] */0,
-            /* daysOfWeek : [] */0,
+            /* days : [] */0,
             /* hours : [] */0,
             /* minutes : [] */0
           ];
   }
 }
 
-function updateDaysOfMonth(param, param$1, daysInMonth, state) {
+function updateDays(param, param$1, state) {
   var dayOfMonth = param$1[/* dayOfMonth */2];
   if (param[/* dayOfMonth */2] === dayOfMonth) {
     return state;
   } else {
+    var daysInMonth = param$1[/* daysInMonth */6];
     var dayOfWeek = param$1[/* dayOfWeek */3];
     var match = partitionBy(/* :: */[
           state[/* months */3],
           /* :: */[
-            state[/* daysOfMonth */4],
+            state[/* days */4],
             /* :: */[
-              state[/* daysOfWeek */5],
+              state[/* hours */5],
               /* :: */[
-                state[/* hours */6],
-                /* :: */[
-                  state[/* minutes */7],
-                  /* [] */0
-                ]
-              ]
-            ]
-          ]
-        ], (function (param) {
-            return Evaluators$NactRecron.isInDayOfMonth(dayOfMonth, dayOfWeek, daysInMonth, param[1][/* daysOfMonth */2]);
-          }));
-    return /* record */[
-            /* removalList */state[/* removalList */0],
-            /* schedules */state[/* schedules */1],
-            /* years */state[/* years */2],
-            /* months */match[1],
-            /* daysOfMonth */match[0],
-            /* daysOfWeek : [] */0,
-            /* hours : [] */0,
-            /* minutes : [] */0
-          ];
-  }
-}
-
-function updateDaysOfWeek(param, param$1, daysInMonth, state) {
-  var dayOfWeek = param$1[/* dayOfWeek */3];
-  if (param[/* dayOfWeek */3] === dayOfWeek) {
-    return state;
-  } else {
-    var dayOfMonth = param$1[/* dayOfMonth */2];
-    var match = partitionBy(/* :: */[
-          state[/* daysOfMonth */4],
-          /* :: */[
-            state[/* daysOfWeek */5],
-            /* :: */[
-              state[/* hours */6],
-              /* :: */[
-                state[/* minutes */7],
+                state[/* minutes */6],
                 /* [] */0
               ]
             ]
           ]
         ], (function (param) {
-            return Evaluators$NactRecron.isInDayOfWeek(dayOfMonth, dayOfWeek, daysInMonth, param[1][/* daysOfWeek */4]);
+            var match = param[1];
+            if (Evaluators$NactRecron.isInDayOfMonth(dayOfMonth, dayOfWeek, daysInMonth, match[/* daysOfMonth */2])) {
+              return Evaluators$NactRecron.isInDayOfWeek(dayOfMonth, dayOfWeek, daysInMonth, match[/* daysOfWeek */4]);
+            } else {
+              return /* false */0;
+            }
           }));
     return /* record */[
-            /* removalList */state[/* removalList */0],
+            /* prevTime */state[/* prevTime */0],
             /* schedules */state[/* schedules */1],
             /* years */state[/* years */2],
-            /* months */state[/* months */3],
-            /* daysOfMonth */match[1],
-            /* daysOfWeek */match[0],
+            /* months */match[1],
+            /* days */match[0],
             /* hours : [] */0,
             /* minutes : [] */0
           ];
   }
 }
 
-function updateHours(param, param$1, _, state) {
+function updateHours(param, param$1, state) {
   var hour = param$1[/* hour */4];
   if (param[/* hour */4] === hour) {
     return state;
   } else {
     var match = partitionBy(/* :: */[
-          state[/* daysOfMonth */4],
+          state[/* days */4],
           /* :: */[
-            state[/* daysOfWeek */5],
+            state[/* hours */5],
             /* :: */[
-              state[/* hours */6],
-              /* :: */[
-                state[/* minutes */7],
-                /* [] */0
-              ]
+              state[/* minutes */6],
+              /* [] */0
             ]
           ]
         ], (function (param) {
             return Evaluators$NactRecron.isInHour(hour, param[1][/* hours */1]);
           }));
     return /* record */[
-            /* removalList */state[/* removalList */0],
+            /* prevTime */state[/* prevTime */0],
             /* schedules */state[/* schedules */1],
             /* years */state[/* years */2],
             /* months */state[/* months */3],
-            /* daysOfMonth */state[/* daysOfMonth */4],
-            /* daysOfWeek */match[1],
+            /* days */match[1],
             /* hours */match[0],
             /* minutes : [] */0
           ];
   }
 }
 
-function updateMinutes(param, param$1, _, state) {
+function updateMinutes(param, param$1, state) {
   var minute = param$1[/* minute */5];
   if (param[/* minute */5] === minute) {
     return state;
   } else {
     var match = partitionBy(/* :: */[
-          state[/* daysOfMonth */4],
+          state[/* hours */5],
           /* :: */[
-            state[/* daysOfWeek */5],
-            /* :: */[
-              state[/* hours */6],
-              /* :: */[
-                state[/* minutes */7],
-                /* [] */0
-              ]
-            ]
+            state[/* minutes */6],
+            /* [] */0
           ]
         ], (function (param) {
             return Evaluators$NactRecron.isInMinute(minute, param[1][/* minutes */0]);
           }));
-    var newrecord = state.slice();
-    newrecord[/* hours */6] = match[1];
-    newrecord[/* minutes */7] = match[0];
-    return newrecord;
+    return /* record */[
+            /* prevTime */state[/* prevTime */0],
+            /* schedules */state[/* schedules */1],
+            /* years */state[/* years */2],
+            /* months */state[/* months */3],
+            /* days */state[/* days */4],
+            /* hours */match[1],
+            /* minutes */match[0]
+          ];
   }
 }
 
+function thread(prevState, prevTime, time, functions) {
+  return Belt_List.reduce(functions, prevState, (function (state, f) {
+                return Curry._3(f, prevTime, time, state);
+              }));
+}
+
+function update(time, prevState) {
+  var newrecord = thread(prevState, prevState[/* prevTime */0], time, /* :: */[
+          updateYears,
+          /* :: */[
+            updateMonths,
+            /* :: */[
+              updateDays,
+              /* :: */[
+                updateHours,
+                /* :: */[
+                  updateMinutes,
+                  /* [] */0
+                ]
+              ]
+            ]
+          ]
+        ]).slice();
+  newrecord[/* prevTime */0] = time;
+  return newrecord;
+}
+
+function getPendingJobs(param) {
+  return param[/* minutes */6];
+}
+
+function addJob(state, expr, msg) {
+  var job_000 = Random.$$int(-2147483648);
+  var job = /* Schedule */[
+    job_000,
+    expr,
+    msg
+  ];
+  var time = state[/* prevTime */0];
+  var updatedState;
+  if (Evaluators$NactRecron.isInYear(time[/* year */0], expr[/* years */5])) {
+    if (Evaluators$NactRecron.isInMonth(time[/* month */1], expr[/* months */3])) {
+      if (Evaluators$NactRecron.isInDayOfMonth(time[/* dayOfMonth */2], time[/* dayOfWeek */3], time[/* daysInMonth */6], expr[/* daysOfMonth */2])) {
+        if (Evaluators$NactRecron.isInDayOfWeek(time[/* dayOfMonth */2], time[/* dayOfWeek */3], time[/* daysInMonth */6], expr[/* daysOfWeek */4])) {
+          if (Evaluators$NactRecron.isInHour(time[/* hour */4], expr[/* hours */1])) {
+            if (Evaluators$NactRecron.isInMinute(time[/* hour */4], expr[/* hours */1])) {
+              var newrecord = state.slice();
+              newrecord[/* minutes */6] = /* :: */[
+                job,
+                state[/* minutes */6]
+              ];
+              updatedState = newrecord;
+            } else {
+              var newrecord$1 = state.slice();
+              newrecord$1[/* hours */5] = /* :: */[
+                job,
+                state[/* hours */5]
+              ];
+              updatedState = newrecord$1;
+            }
+          } else {
+            var newrecord$2 = state.slice();
+            newrecord$2[/* days */4] = /* :: */[
+              job,
+              state[/* days */4]
+            ];
+            updatedState = newrecord$2;
+          }
+        } else {
+          var newrecord$3 = state.slice();
+          newrecord$3[/* months */3] = /* :: */[
+            job,
+            state[/* months */3]
+          ];
+          updatedState = newrecord$3;
+        }
+      } else {
+        var newrecord$4 = state.slice();
+        newrecord$4[/* months */3] = /* :: */[
+          job,
+          state[/* months */3]
+        ];
+        updatedState = newrecord$4;
+      }
+    } else {
+      var newrecord$5 = state.slice();
+      newrecord$5[/* years */2] = /* :: */[
+        job,
+        state[/* years */2]
+      ];
+      updatedState = newrecord$5;
+    }
+  } else {
+    var newrecord$6 = state.slice();
+    newrecord$6[/* schedules */1] = /* :: */[
+      job,
+      state[/* schedules */1]
+    ];
+    updatedState = newrecord$6;
+  }
+  return /* tuple */[
+          job,
+          updatedState
+        ];
+}
+
+function scheduleDoesNotHaveId(sId, param) {
+  return +(sId !== param[0]);
+}
+
+function getJobs(state) {
+  return Belt_List.concatMany(/* array */[
+              state[/* schedules */1],
+              state[/* years */2],
+              state[/* months */3],
+              state[/* days */4],
+              state[/* hours */5],
+              state[/* minutes */6]
+            ]);
+}
+
+function tryFindJob(state, targetId) {
+  return Belt_Option.getWithDefault(Belt_List.getBy(/* :: */[
+                  Belt_List.getBy(state[/* schedules */1], (function (param) {
+                          return +(param[0] === targetId);
+                        })),
+                  /* :: */[
+                    Belt_List.getBy(state[/* years */2], (function (param) {
+                            return +(param[0] === targetId);
+                          })),
+                    /* :: */[
+                      Belt_List.getBy(state[/* months */3], (function (param) {
+                              return +(param[0] === targetId);
+                            })),
+                      /* :: */[
+                        Belt_List.getBy(state[/* days */4], (function (param) {
+                                return +(param[0] === targetId);
+                              })),
+                        /* :: */[
+                          Belt_List.getBy(state[/* hours */5], (function (param) {
+                                  return +(param[0] === targetId);
+                                })),
+                          /* :: */[
+                            Belt_List.getBy(state[/* minutes */6], (function (param) {
+                                    return +(param[0] === targetId);
+                                  })),
+                            /* [] */0
+                          ]
+                        ]
+                      ]
+                    ]
+                  ]
+                ], (function (param) {
+                    if (param) {
+                      return /* true */1;
+                    } else {
+                      return /* false */0;
+                    }
+                  })), /* None */0);
+}
+
+function removeJob(state, id) {
+  return /* record */[
+          /* prevTime */state[/* prevTime */0],
+          /* schedules */Belt_List.keep(state[/* schedules */1], (function (param) {
+                  return scheduleDoesNotHaveId(id, param);
+                })),
+          /* years */Belt_List.keep(state[/* years */2], (function (param) {
+                  return scheduleDoesNotHaveId(id, param);
+                })),
+          /* months */Belt_List.keep(state[/* months */3], (function (param) {
+                  return scheduleDoesNotHaveId(id, param);
+                })),
+          /* days */Belt_List.keep(state[/* days */4], (function (param) {
+                  return scheduleDoesNotHaveId(id, param);
+                })),
+          /* hours */Belt_List.keep(state[/* hours */5], (function (param) {
+                  return scheduleDoesNotHaveId(id, param);
+                })),
+          /* minutes */Belt_List.keep(state[/* minutes */6], (function (param) {
+                  return scheduleDoesNotHaveId(id, param);
+                }))
+        ];
+}
+
+var ScheduleId = [];
+
 var empty = /* record */[
-  /* removalList */Belt_SetInt.empty,
+  /* prevTime : record */[
+    /* year */0,
+    /* month */0,
+    /* dayOfMonth */0,
+    /* dayOfWeek */0,
+    /* hour */0,
+    /* minute */0,
+    /* daysInMonth */0
+  ],
   /* schedules : [] */0,
   /* years : [] */0,
   /* months : [] */0,
-  /* daysOfMonth : [] */0,
-  /* daysOfWeek : [] */0,
+  /* days : [] */0,
   /* hours : [] */0,
   /* minutes : [] */0
 ];
 
-function update(prevTime, time, daysInMonth, prevState) {
-  var prevState$1 = prevState;
-  var prevTime$1 = prevTime;
-  var time$1 = time;
-  var daysInMonth$1 = daysInMonth;
-  var functions = /* :: */[
-    updateYear,
-    /* :: */[
-      updateMonth,
-      /* :: */[
-        updateDaysOfMonth,
-        /* :: */[
-          updateDaysOfWeek,
-          /* :: */[
-            updateHours,
-            /* :: */[
-              updateMinutes,
-              /* [] */0
-            ]
-          ]
-        ]
-      ]
-    ]
-  ];
-  return Belt_List.reduce(functions, prevState$1, (function (state, f) {
-                return Curry._4(f, prevTime$1, time$1, daysInMonth$1, state);
-              }));
-}
-
+exports.Time = Time;
+exports.ScheduleId = ScheduleId;
 exports.empty = empty;
 exports.update = update;
+exports.getPendingJobs = getPendingJobs;
+exports.getJobs = getJobs;
+exports.tryFindJob = tryFindJob;
+exports.addJob = addJob;
+exports.removeJob = removeJob;
 /* No side effect */

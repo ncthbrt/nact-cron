@@ -34,13 +34,13 @@ let isInHour = isInExpr;
 
 let isInMonth = isInExpr;
 
-let isInDayOfWeek = (~currentDayOfMonth, ~currentDayOfWeek, ~daysInMonth) =>
+let isInDayOfWeek = (~dayOfMonth, ~dayOfWeek, ~daysInMonth) =>
   fun
   | `LastDayOfWeekInMonth(day) =>
-    currentDayOfWeek == day && currentDayOfMonth + 7 > daysInMonth
+    dayOfWeek == day && dayOfMonth + 7 > daysInMonth
   | `NthDayOfWeekInMonth(dayOfWeek, n) =>
-    currentDayOfWeek == dayOfWeek && currentDayOfMonth / 7 + 1 == n
-  | #commonCronExpr as expr => isInExpr(currentDayOfWeek, expr);
+    dayOfWeek == dayOfWeek && dayOfMonth / 7 + 1 == n
+  | #commonCronExpr as expr => isInExpr(dayOfWeek, expr);
 
 let isNearestWeekday =
     (currentDayOfMonth, daysInMonth, scheduledDayOfMonth, currentDayOfWeek) => {
@@ -70,12 +70,12 @@ let isLastWeekdayOfMonth = (currentDayOfMonth, daysInMonth, currentDayOfWeek) =>
   currentDayOfMonth == dayOfMonthOfLastWeekday;
 };
 
-let isInDayOfMonth = (~currentDayOfMonth, ~currentDayOfWeek, ~daysInMonth) =>
+let isInDayOfMonth = (~dayOfMonth, ~dayOfWeek, ~daysInMonth) =>
   fun
   | `DaysBeforeEndOfMonth(daysBefore) =>
-    daysInMonth - currentDayOfMonth == daysBefore
+    daysInMonth - dayOfMonth == daysBefore
   | `NearestWeekday(day) =>
-    isNearestWeekday(currentDayOfMonth, daysInMonth, day, currentDayOfWeek)
+    isNearestWeekday(dayOfMonth, daysInMonth, day, dayOfWeek)
   | `LastWeekdayOfMonth =>
-    isLastWeekdayOfMonth(currentDayOfMonth, daysInMonth, currentDayOfWeek)
-  | #commonCronExpr as expr => isInExpr(currentDayOfMonth, expr);
+    isLastWeekdayOfMonth(dayOfMonth, daysInMonth, dayOfWeek)
+  | #commonCronExpr as expr => isInExpr(dayOfMonth, expr);

@@ -23,8 +23,8 @@ let isInMonth:
 
 let isInDayOfWeek:
   (
-    ~currentDayOfMonth: int,
-    ~currentDayOfWeek: int,
+    ~dayOfMonth: int,
+    ~dayOfWeek: int,
     ~daysInMonth: int,
     [
       | `Values(array(int))
@@ -38,8 +38,8 @@ let isInDayOfWeek:
 
 let isInDayOfMonth:
   (
-    ~currentDayOfMonth: int,
-    ~currentDayOfWeek: int,
+    ~dayOfMonth: int,
+    ~dayOfWeek: int,
     ~daysInMonth: int,
     [
       | `Values(array(int))
