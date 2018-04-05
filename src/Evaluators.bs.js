@@ -73,8 +73,7 @@ function isInDayOfWeek(dayOfMonth, dayOfWeek, daysInMonth, expr) {
       }
     } else {
       var match = expr[1];
-      var dayOfWeek$1 = match[0];
-      if (Caml_obj.caml_equal(dayOfWeek$1, dayOfWeek$1)) {
+      if (match[0] === dayOfWeek) {
         return +(((dayOfMonth / 7 | 0) + 1 | 0) === match[1]);
       } else {
         return /* false */0;

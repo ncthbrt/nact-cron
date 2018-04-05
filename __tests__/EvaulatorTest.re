@@ -4,40 +4,70 @@ open ExpectJs;
 
 open Evaluators;
 
+let daysInMonths: list((int, int)) = [
+  (1, 31), /* JAN */
+  (2, 28), /* FEB */
+  (2, 29), /* FEB */
+  (3, 31), /* MAR */
+  (4, 30), /* APR */
+  (5, 31), /* MAY */
+  (6, 30), /* JUN */
+  (7, 31), /* JUL */
+  (8, 31), /* AUG*/
+  (9, 30), /* SEP */
+  (10, 31), /* OCT */
+  (11, 30), /* NOV */
+  (12, 31) /* DEC */
+];
+
+let intToDay =
+  fun
+  | 0 => "Sunday"
+  | 1 => "Monday"
+  | 2 => "Tuesday"
+  | 3 => "Wednesday"
+  | 4 => "Thursday"
+  | 5 => "Friday"
+  | 6 => "Saturday"
+  | _ => "???";
+
 let randomTime = (~start, ~end_, ~step) =>
-  Random.int((end_ - start) / step) * step + start;
+  Random.int((end_ - start) / step + 1) * step + start;
+
+let testRandomValues = (size, lowerBound, upperBound, f) => {
+  let values =
+    Belt.Array.range(0, size)
+    |. Belt.Array.map((_) =>
+         randomTime(~start=lowerBound, ~end_=upperBound, ~step=1)
+       )
+    |. Js.Array.sortInPlace;
+  let interval =
+    Belt.Array.range(lowerBound, upperBound) |. Belt.List.fromArray;
+  let (inValues, outOfValues) =
+    Belt.List.partition(interval, i => Belt.Array.some(values, j => i == j));
+  let inValuesTest = i =>
+    test(
+      "Time "
+      ++ string_of_int(i)
+      ++ " which is in the set of supplied values should evaluate to true",
+      () =>
+      expect(f(i, `Values(values))) |> toBe(true)
+    );
+  let outOfValuesTest = i =>
+    test(
+      "Time "
+      ++ string_of_int(i)
+      ++ " which is not in the set of supplied values should evaluate to false",
+      () =>
+      expect(f(i, `Values(values))) |> toBe(false)
+    );
+  inValues |. Belt.List.forEach(inValuesTest);
+  outOfValues |. Belt.List.forEach(outOfValuesTest);
+};
 
 let testIsInExpr = (name, f, ~lowerBound=0, ~upperBound) => {
   let randomTime = (~start=lowerBound, ~end_=upperBound, ~step=1, ()) =>
     randomTime(~start, ~end_, ~step);
-  let testRandomValues = size => {
-    let values =
-      Belt.Array.range(0, size)
-      |. Belt.Array.map((_) => randomTime())
-      |. Js.Array.sortInPlace;
-    let interval =
-      Belt.Array.range(lowerBound, upperBound) |. Belt.List.fromArray;
-    let (inValues, outOfValues) =
-      Belt.List.partition(interval, i => Belt.Array.some(values, j => i == j));
-    let inValuesTest = i =>
-      test(
-        "Time "
-        ++ string_of_int(i)
-        ++ "which is in the set of supplied values should evaluate to true",
-        () =>
-        expect(f(i, `Values(values))) |> toBe(true)
-      );
-    let outOfValuesTest = i =>
-      test(
-        "Time "
-        ++ string_of_int(i)
-        ++ "which is not in the set of supplied values should evaluate to false",
-        () =>
-        expect(f(i, `Values(values))) |> toBe(false)
-      );
-    inValues |. Belt.List.forEach(inValuesTest);
-    outOfValues |. Belt.List.forEach(outOfValuesTest);
-  };
   let testRandomInterval = (_) => {
     let timeA = randomTime();
     let timeB = randomTime();
@@ -53,7 +83,7 @@ let testIsInExpr = (name, f, ~lowerBound=0, ~upperBound) => {
         ++ string_of_int(start)
         ++ ", "
         ++ string_of_int(end_)
-        ++ "] with a step size of"
+        ++ "] with a step size of "
         ++ string_of_int(step)
         ++ " should evaluate to true",
         () =>
@@ -67,7 +97,7 @@ let testIsInExpr = (name, f, ~lowerBound=0, ~upperBound) => {
         ++ string_of_int(start)
         ++ ", "
         ++ string_of_int(end_)
-        ++ "] with a step size of"
+        ++ "] with a step size of "
         ++ string_of_int(step)
         ++ " should evaluate to false",
         () =>
@@ -85,17 +115,14 @@ let testIsInExpr = (name, f, ~lowerBound=0, ~upperBound) => {
         expect(f(randomTime(), `Wildcard)) |> toBe(true)
       );
       Belt.Range.forEach(0, 3, testRandomInterval);
-      Belt.Range.forEach(0, 8, testRandomValues);
+      Belt.Range.forEach(
+        0,
+        4,
+        testRandomValues(_, lowerBound, upperBound, f),
+      );
     },
   );
 };
-
-let testIsInYear = () =>
-  describe("isInYear", () =>
-    test("`Wildcard always evaluate to true", () =>
-      expect(isInYear(2099, `Wildcard)) |> toBe(true)
-    )
-  );
 
 testIsInExpr("isInMinute", isInMinute, ~upperBound=59);
 
@@ -103,4 +130,419 @@ testIsInExpr("isInHour", isInHour, ~lowerBound=0, ~upperBound=23);
 
 testIsInExpr("isInMonth", isInMonth, ~lowerBound=0, ~upperBound=23);
 
-testIsInYear();
+describe("isInYear", () => {
+  let randomTime = () => randomTime(~start=0, ~end_=3000, ~step=1);
+  let testRandomInterval = (~openStart=false, ~openEnd=false, _) => {
+    let timeA = randomTime();
+    let timeB = randomTime();
+    let intervalStart = openStart ? None : Some(min(timeA, timeB));
+    let intervalEnd = openEnd ? None : Some(max(timeA, timeB));
+    let step = Random.int(10) + 1;
+    let interval =
+      Belt.Array.rangeBy(
+        Belt.Option.getWithDefault(intervalStart, 0),
+        Belt.Option.getWithDefault(intervalEnd, 3000),
+        ~step,
+      );
+    let inIntervalTest = i =>
+      test(
+        "Time "
+        ++ string_of_int(i)
+        ++ " which is inside the interval ["
+        ++ (
+          Js.Json.stringifyAny(intervalStart)
+          |. Belt.Option.getWithDefault("")
+        )
+        ++ ", "
+        ++ (
+          Js.Json.stringifyAny(intervalEnd) |. Belt.Option.getWithDefault("")
+        )
+        ++ "] with a step size of "
+        ++ string_of_int(step)
+        ++ " should evaluate to true",
+        () =>
+        expect(isInYear(i, `Interval((intervalStart, intervalEnd, step))))
+        |> toBe(true)
+      );
+    let outOfIntervalTest = i =>
+      test(
+        "Time "
+        ++ string_of_int(i)
+        ++ " which is outside of the interval ["
+        ++ (
+          Js.Json.stringifyAny(intervalStart)
+          |. Belt.Option.getWithDefault("")
+        )
+        ++ ", "
+        ++ (
+          Js.Json.stringifyAny(intervalEnd) |. Belt.Option.getWithDefault("")
+        )
+        ++ "] with a step size of "
+        ++ string_of_int(step)
+        ++ " should evaluate to false",
+        () =>
+        expect(isInYear(i, `Interval((intervalStart, intervalEnd, step))))
+        |> toBe(false)
+      );
+    interval |. Belt.Array.forEach(inIntervalTest);
+    interval
+    |. Belt.Array.keep(i => ! Belt.Array.some(interval, j => i == j))
+    |. Belt.Array.forEach(outOfIntervalTest);
+  };
+  test("`Wildcard always evaluate to true", () =>
+    expect(isInYear(Random.int(3000), `Wildcard)) |> toBe(true)
+  );
+  Belt.Range.forEach(0, 4, testRandomValues(_, 2000, 3000, isInYear));
+  Belt.Range.forEach(0, 2, testRandomInterval(~openStart=true));
+  Belt.Range.forEach(0, 2, testRandomInterval(~openEnd=true));
+  Belt.Range.forEach(0, 2, testRandomInterval);
+});
+
+let testWildcard = f =>
+  test("`Wildcard always evaluate to true", () => {
+    let daysInMonth = 28 + Random.int(4);
+    expect(
+      f(daysInMonth, Random.int(daysInMonth + 1), Random.int(7), `Wildcard),
+    )
+    |> toBe(true);
+  });
+
+describe("isInDayOfWeek", () => {
+  let randomTime = () => randomTime(~start=0, ~end_=6, ~step=1);
+  let testRandomValues = size => {
+    let values =
+      Belt.Array.range(0, size)
+      |. Belt.Array.map((_) => Random.int(7))
+      |. Js.Array.sortInPlace;
+    let interval = Belt.Array.range(0, 6) |. Belt.List.fromArray;
+    let (inValues, outOfValues) =
+      Belt.List.partition(interval, i => Belt.Array.some(values, j => i == j));
+    let inValuesTest = i => {
+      let daysInMonth = 28 + Random.int(4);
+      test(
+        "Time "
+        ++ string_of_int(i)
+        ++ " which is in the set of supplied values should evaluate to true",
+        () =>
+        expect(
+          isInDayOfWeek(
+            ~daysInMonth,
+            ~dayOfMonth=Random.int(daysInMonth + 1),
+            ~dayOfWeek=i,
+            `Values(values),
+          ),
+        )
+        |> toBe(true)
+      );
+    };
+    let outOfValuesTest = i => {
+      let daysInMonth = 28 + Random.int(4);
+      test(
+        "Time "
+        ++ string_of_int(i)
+        ++ " which is in the set of supplied values should evaluate to true",
+        () =>
+        expect(
+          isInDayOfWeek(
+            ~daysInMonth,
+            ~dayOfMonth=Random.int(daysInMonth + 1),
+            ~dayOfWeek=i,
+            `Values(values),
+          ),
+        )
+        |> toBe(false)
+      );
+    };
+    inValues |. Belt.List.forEach(inValuesTest);
+    outOfValues |. Belt.List.forEach(outOfValuesTest);
+  };
+  let testRandomInterval = (_) => {
+    let timeA = randomTime();
+    let timeB = randomTime();
+    let start = min(timeA, timeB);
+    let end_ = max(timeA, timeB);
+    let step = Random.int(4) + 1;
+    let interval = Belt.Array.rangeBy(start, end_, ~step);
+    let inIntervalTest = i =>
+      test(
+        "Time "
+        ++ string_of_int(i)
+        ++ " which is inside the interval ["
+        ++ string_of_int(start)
+        ++ ", "
+        ++ string_of_int(end_)
+        ++ "] with a step size of "
+        ++ string_of_int(step)
+        ++ " should evaluate to true",
+        () => {
+          let daysInMonth = 28 + Random.int(4);
+          expect(
+            isInDayOfWeek(
+              ~dayOfWeek=i,
+              ~dayOfMonth=Random.int(daysInMonth + 1),
+              ~daysInMonth,
+              `Interval((start, end_, step)),
+            ),
+          )
+          |> toBe(true);
+        },
+      );
+    let outOfIntervalTest = i =>
+      test(
+        "Time "
+        ++ string_of_int(i)
+        ++ " which is outside of the interval ["
+        ++ string_of_int(start)
+        ++ ", "
+        ++ string_of_int(end_)
+        ++ "] with a step size of "
+        ++ string_of_int(step)
+        ++ " should evaluate to false",
+        () => {
+          let daysInMonth = 28 + Random.int(4);
+          expect(
+            isInDayOfWeek(
+              ~dayOfWeek=i,
+              ~dayOfMonth=Random.int(daysInMonth + 1),
+              ~daysInMonth,
+              `Interval((start, end_, step)),
+            ),
+          )
+          |> toBe(false);
+        },
+      );
+    interval |. Belt.Array.forEach(inIntervalTest);
+    Belt.Array.range(start, end_)
+    |. Belt.Array.keep(i => ! Belt.Array.some(interval, j => i == j))
+    |. Belt.Array.forEach(outOfIntervalTest);
+  };
+  let testNthDayOfWeekInMonth = dayOfWeek => {
+    let offset = Random.int(7);
+    test(
+      "2nd "
+      ++ intToDay(dayOfWeek)
+      ++ " of the month should evaluate to false as expecting the 3rd "
+      ++ intToDay(dayOfWeek),
+      () =>
+      expect(
+        isInDayOfWeek(
+          ~daysInMonth=31,
+          ~dayOfMonth=offset + 7,
+          ~dayOfWeek,
+          `NthDayOfWeekInMonth((dayOfWeek, 3)),
+        ),
+      )
+      |. toBe(false, _)
+    );
+    test(
+      "3rd "
+      ++ intToDay(dayOfWeek)
+      ++ " of the month should evaluate to true as expecting the 3rd "
+      ++ intToDay(dayOfWeek),
+      () =>
+      expect(
+        isInDayOfWeek(
+          ~daysInMonth=31,
+          ~dayOfMonth=offset + 14,
+          ~dayOfWeek,
+          `NthDayOfWeekInMonth((dayOfWeek, 3)),
+        ),
+      )
+      |. toBe(true, _)
+    );
+    test(
+      "3rd "
+      ++ intToDay((dayOfWeek + 1) mod 7)
+      ++ " of the month should evaluate to false as expecting the 3rd "
+      ++ intToDay(dayOfWeek),
+      () =>
+      expect(
+        isInDayOfWeek(
+          ~daysInMonth=31,
+          ~dayOfMonth=offset + 14 + 1,
+          ~dayOfWeek=(dayOfWeek + 1) mod 7,
+          `NthDayOfWeekInMonth((dayOfWeek, 3)),
+        ),
+      )
+      |. toBe(false, _)
+    );
+  };
+  let testLastDayOfWeekInMonth = dayOfWeek => ();
+  testWildcard((daysInMonth, dayOfMonth, dayOfWeek, daysOfWeek) =>
+    isInDayOfWeek(~daysInMonth, ~dayOfMonth, ~dayOfWeek, daysOfWeek)
+  );
+  Belt.Range.forEach(0, 6, testLastDayOfWeekInMonth);
+  Belt.Range.forEach(0, 6, testNthDayOfWeekInMonth);
+  Belt.Range.forEach(0, 4, testRandomValues);
+  Belt.Range.forEach(0, 4, testRandomInterval);
+});
+
+describe("isInDayOfMonth", () => {
+  let randomTime = () => randomTime(~start=1, ~end_=31, ~step=1);
+  let testRandomInterval = (_) => {
+    let timeA = randomTime();
+    let timeB = randomTime();
+    let start = min(timeA, timeB);
+    let end_ = max(timeA, timeB);
+    let step = Random.int(10) + 1;
+    let interval = Belt.Array.rangeBy(start, end_, ~step);
+    let inIntervalTest = i =>
+      test(
+        "Time "
+        ++ string_of_int(i)
+        ++ " which is inside the interval ["
+        ++ string_of_int(start)
+        ++ ", "
+        ++ string_of_int(end_)
+        ++ "] with a step size of "
+        ++ string_of_int(step)
+        ++ " should evaluate to true",
+        () => {
+          let daysInMonth = 28 + Random.int(4);
+          let daysInMonth = i > daysInMonth ? i : daysInMonth;
+          expect(
+            isInDayOfMonth(
+              ~dayOfWeek=Random.int(7),
+              ~dayOfMonth=i,
+              ~daysInMonth,
+              `Interval((start, end_, step)),
+            ),
+          )
+          |> toBe(true);
+        },
+      );
+    let outOfIntervalTest = i =>
+      test(
+        "Time "
+        ++ string_of_int(i)
+        ++ " which is outside of the interval ["
+        ++ string_of_int(start)
+        ++ ", "
+        ++ string_of_int(end_)
+        ++ "] with a step size of "
+        ++ string_of_int(step)
+        ++ " should evaluate to false",
+        () => {
+          let daysInMonth = 28 + Random.int(4);
+          let daysInMonth = i > daysInMonth ? i : daysInMonth;
+          expect(
+            isInDayOfMonth(
+              ~dayOfWeek=Random.int(7),
+              ~dayOfMonth=i,
+              ~daysInMonth,
+              `Interval((start, end_, step)),
+            ),
+          )
+          |> toBe(false);
+        },
+      );
+    interval |. Belt.Array.forEach(inIntervalTest);
+    Belt.Array.range(start, end_)
+    |. Belt.Array.keep(i => ! Belt.Array.some(interval, j => i == j))
+    |. Belt.Array.forEach(outOfIntervalTest);
+  };
+  let testRandomValues = size => {
+    let values =
+      Belt.Array.range(0, size)
+      |. Belt.Array.map((_) => Random.int(31))
+      |. Js.Array.sortInPlace;
+    let interval = Belt.Array.range(1, 31) |. Belt.List.fromArray;
+    let (inValues, outOfValues) =
+      Belt.List.partition(interval, i => Belt.Array.some(values, j => i == j));
+    let inValuesTest = i => {
+      let daysInMonth = 28 + Random.int(4);
+      let daysInMonth = i > daysInMonth ? i : daysInMonth;
+      test(
+        "Time "
+        ++ string_of_int(i)
+        ++ " which is in the set of supplied values should evaluate to true",
+        () =>
+        expect(
+          isInDayOfMonth(
+            ~daysInMonth,
+            ~dayOfWeek=Random.int(7),
+            ~dayOfMonth=i,
+            `Values(values),
+          ),
+        )
+        |> toBe(true)
+      );
+    };
+    let outOfValuesTest = i => {
+      let daysInMonth = 28 + Random.int(4);
+      let daysInMonth = i > daysInMonth ? i : daysInMonth;
+      test(
+        "Time "
+        ++ string_of_int(i)
+        ++ " which is in the set of supplied values should evaluate to true",
+        () =>
+        expect(
+          isInDayOfMonth(
+            ~daysInMonth,
+            ~dayOfWeek=Random.int(7),
+            ~dayOfMonth=i,
+            `Values(values),
+          ),
+        )
+        |> toBe(false)
+      );
+    };
+    inValues |. Belt.List.forEach(inValuesTest);
+    outOfValues |. Belt.List.forEach(outOfValuesTest);
+  };
+  let testNthLastDayOfMonth = n => {
+    daysInMonths
+    |. Belt.List.forEach(((currentMonth, daysInMonth)) =>
+         test(
+           "The "
+           ++ string_of_int(n)
+           ++ "th last day before end of month "
+           ++ string_of_int(currentMonth)
+           ++ " should evaluate to true",
+           () => {
+             let dayOfMonth = daysInMonth - n;
+             expect(
+               isInDayOfMonth(
+                 ~daysInMonth,
+                 ~dayOfMonth,
+                 ~dayOfWeek=Random.int(7),
+                 `DaysBeforeEndOfMonth(n),
+               ),
+             )
+             |> toBe(true);
+           },
+         )
+       );
+    daysInMonths
+    |. Belt.List.forEach(((currentMonth, daysInMonth)) =>
+         test(
+           "Days other than the "
+           ++ string_of_int(n)
+           ++ "th last day before end of month "
+           ++ string_of_int(currentMonth)
+           ++ " should evaluate to false",
+           () => {
+             let dayOfMonth =
+               (Random.int(daysInMonth) + (daysInMonth - n))
+               mod (daysInMonth + 1)
+               + 1;
+             expect(
+               isInDayOfMonth(
+                 ~daysInMonth,
+                 ~dayOfMonth,
+                 ~dayOfWeek=Random.int(7),
+                 `DaysBeforeEndOfMonth(n),
+               ),
+             )
+             |> toBe(false);
+           },
+         )
+       );
+  };
+  testWildcard((daysInMonth, dayOfMonth, dayOfWeek, daysOfWeek) =>
+    isInDayOfMonth(~daysInMonth, ~dayOfMonth, ~dayOfWeek, daysOfWeek)
+  );
+  Belt.Range.forEach(0, 4, testRandomValues);
+  Belt.Range.forEach(0, 4, testNthLastDayOfMonth);
+  Belt.Range.forEach(0, 4, testRandomInterval);
+});
