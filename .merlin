@@ -1,6 +1,4 @@
 ####{BSB GENERATED: NO EDIT
-B lib/bs
-FLG -open NactRecron
 FLG -ppx /Users/ncthbrt/git/nact-patterns/node_modules/bs-platform/lib/bsppx.exe
 S /Users/ncthbrt/git/nact-patterns/node_modules/bs-platform/lib/ocaml
 B /Users/ncthbrt/git/nact-patterns/node_modules/bs-platform/lib/ocaml

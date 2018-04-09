@@ -2,6 +2,8 @@ open Jest;
 
 open ExpectJs;
 
+module Expression = NactCron_Expression;
+
 open Expression;
 
 let testExpression =
@@ -264,4 +266,13 @@ testMalformedExpression("* * * JANFEB *");
 
 testMalformedExpression("* * * - *");
 
-testMalformedExpression("* * * * * -");
+test(
+  "A malformed cron expression should return None when calling tryParse", () =>
+  expect(Expression.tryParse("* * * * * -")) |> toEqual(None)
+);
+
+test(
+  "A well formed cron expression should return Some when calling tryParse", () =>
+  expect(Expression.tryParse("* * * * *"))
+  |> toEqual(Some(Expression.parse("* * * * *")))
+);

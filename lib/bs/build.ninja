@@ -1,4 +1,4 @@
-bs_package_flags = -bs-package-map nact-recron
+bs_package_flags = -bs-package-name nact-recron
 src_root_dir = /Users/ncthbrt/git/nact-patterns
 bsc = /Users/ncthbrt/git/nact-patterns/node_modules/bs-platform/lib/bsc.exe
 bsdep = /Users/ncthbrt/git/nact-patterns/node_modules/bs-platform/lib/bsb_helper.exe
@@ -7,27 +7,35 @@ bsc_flags = -bs-suffix -nostdlib -I '/Users/ncthbrt/git/nact-patterns/node_modul
 ppx_flags = 
 bs_package_includes = -I /Users/ncthbrt/git/nact-patterns/node_modules/reason-nact/lib/ocaml
 bs_package_dev_includes = -I /Users/ncthbrt/git/nact-patterns/node_modules/@glennsl/bs-jest/lib/ocaml
-namespace = -ns NactRecron
+namespace = 
 bsb_dir_group = 0
 bsc_group_1_includes = -I __tests__
 refmt = /Users/ncthbrt/git/nact-patterns/node_modules/bs-platform/lib/refmt.exe
 reason_react_jsx = 
 refmt_flags = --print binary
-bsc_lib_includes = -I . -I src
+bsc_lib_includes = -I src
 rule build_ast_and_module_sets_from_re
   command = ${bsc} -pp "${refmt} ${refmt_flags}" ${reason_react_jsx}  ${ppx_flags} ${warnings} ${bsc_flags} -c -o ${out} -bs-syntax-only -bs-binary-ast -impl ${in}
   description = [34mBuilding[39m [2m${out}[22m
-build __tests__/ParserTest.mlast : build_ast_and_module_sets_from_re $src_root_dir/__tests__/ParserTest.re
+build __tests__/ActorTest.mlast : build_ast_and_module_sets_from_re $src_root_dir/__tests__/ActorTest.re
 rule build_deps
   command = ${bsdep} ${namespace} -g ${bsb_dir_group} -MD ${in}
   description = [34mBuilding[39m [2m${out}[22m
-build __tests__/ParserTest.mlast.d : build_deps __tests__/ParserTest.mlast
+build __tests__/ActorTest.mlast.d : build_deps __tests__/ActorTest.mlast
   bsb_dir_group = 1
 rule build_cmj_cmi
   command = ${bsc} ${bs_package_flags} -bs-assume-no-mli -bs-no-builtin-ppx-ml -bs-no-implicit-include ${bs_package_includes} ${bsc_lib_includes} ${bsc_extra_includes} ${warnings} ${bsc_flags} -o ${out} -c  ${in} $postbuild
   depfile = ${in}.d
   description = [34mBuilding[39m [2m${out}[22m
-build __tests__/ParserTest-NactRecron.cmj |  $src_root_dir/__tests__/ParserTest.bs.js __tests__/ParserTest-NactRecron.cmi : build_cmj_cmi __tests__/ParserTest.mlast
+build __tests__/ActorTest.cmj |  $src_root_dir/__tests__/ActorTest.bs.js __tests__/ActorTest.cmi : build_cmj_cmi __tests__/ActorTest.mlast
+  bsc_flags = $bsc_flags -bs-re-out -bs-super-errors
+  bs_package_flags = $bs_package_flags  -bs-package-output commonjs:__tests__
+  bs_package_includes = $bs_package_includes $bs_package_dev_includes
+  bsc_extra_includes = $bsc_group_1_includes
+build __tests__/ParserTest.mlast : build_ast_and_module_sets_from_re $src_root_dir/__tests__/ParserTest.re
+build __tests__/ParserTest.mlast.d : build_deps __tests__/ParserTest.mlast
+  bsb_dir_group = 1
+build __tests__/ParserTest.cmj |  $src_root_dir/__tests__/ParserTest.bs.js __tests__/ParserTest.cmi : build_cmj_cmi __tests__/ParserTest.mlast
   bsc_flags = $bsc_flags -bs-re-out -bs-super-errors
   bs_package_flags = $bs_package_flags  -bs-package-output commonjs:__tests__
   bs_package_includes = $bs_package_includes $bs_package_dev_includes
@@ -35,7 +43,15 @@ build __tests__/ParserTest-NactRecron.cmj |  $src_root_dir/__tests__/ParserTest.
 build __tests__/EvaulatorTest.mlast : build_ast_and_module_sets_from_re $src_root_dir/__tests__/EvaulatorTest.re
 build __tests__/EvaulatorTest.mlast.d : build_deps __tests__/EvaulatorTest.mlast
   bsb_dir_group = 1
-build __tests__/EvaulatorTest-NactRecron.cmj |  $src_root_dir/__tests__/EvaulatorTest.bs.js __tests__/EvaulatorTest-NactRecron.cmi : build_cmj_cmi __tests__/EvaulatorTest.mlast
+build __tests__/EvaulatorTest.cmj |  $src_root_dir/__tests__/EvaulatorTest.bs.js __tests__/EvaulatorTest.cmi : build_cmj_cmi __tests__/EvaulatorTest.mlast
+  bsc_flags = $bsc_flags -bs-re-out -bs-super-errors
+  bs_package_flags = $bs_package_flags  -bs-package-output commonjs:__tests__
+  bs_package_includes = $bs_package_includes $bs_package_dev_includes
+  bsc_extra_includes = $bsc_group_1_includes
+build __tests__/SchedulingTest.mlast : build_ast_and_module_sets_from_re $src_root_dir/__tests__/SchedulingTest.re
+build __tests__/SchedulingTest.mlast.d : build_deps __tests__/SchedulingTest.mlast
+  bsb_dir_group = 1
+build __tests__/SchedulingTest.cmj |  $src_root_dir/__tests__/SchedulingTest.bs.js __tests__/SchedulingTest.cmi : build_cmj_cmi __tests__/SchedulingTest.mlast
   bsc_flags = $bsc_flags -bs-re-out -bs-super-errors
   bs_package_flags = $bs_package_flags  -bs-package-output commonjs:__tests__
   bs_package_includes = $bs_package_includes $bs_package_dev_includes
@@ -43,56 +59,52 @@ build __tests__/EvaulatorTest-NactRecron.cmj |  $src_root_dir/__tests__/Evaulato
 rule build_ast_and_module_sets_from_rei
   command = ${bsc} -pp "${refmt} ${refmt_flags}" ${reason_react_jsx} ${ppx_flags} ${warnings} ${bsc_flags}  -c -o ${out} -bs-syntax-only -bs-binary-ast -intf ${in}
   description = [34mBuilding[39m [2m${out}[22m
-build src/Actor.mliast : build_ast_and_module_sets_from_rei $src_root_dir/src/Actor.rei
-build src/Actor.mliast.d : build_deps src/Actor.mliast
+build src/NactCron.mliast : build_ast_and_module_sets_from_rei $src_root_dir/src/NactCron.rei
+build src/NactCron.mliast.d : build_deps src/NactCron.mliast
 rule build_cmi
   command = ${bsc} ${bs_package_flags} -bs-no-builtin-ppx-mli -bs-no-implicit-include ${bs_package_includes} ${bsc_lib_includes} ${bsc_extra_includes} ${warnings} ${bsc_flags} -o ${out} -c  ${in}
   depfile = ${in}.d
   description = [34mBuilding[39m [2m${out}[22m
-build src/Actor-NactRecron.cmi : build_cmi src/Actor.mliast
+build src/NactCron.cmi : build_cmi src/NactCron.mliast
   bsc_flags = $bsc_flags -bs-re-out -bs-super-errors
   bs_package_flags = $bs_package_flags  -bs-package-output commonjs:src
-build src/Actor.mlast : build_ast_and_module_sets_from_re $src_root_dir/src/Actor.re
-build src/Actor.mlast.d : build_deps src/Actor.mlast
+build src/NactCron.mlast : build_ast_and_module_sets_from_re $src_root_dir/src/NactCron.re
+build src/NactCron.mlast.d : build_deps src/NactCron.mlast
 rule build_cmj_only
   command = ${bsc} ${bs_package_flags} -bs-assume-has-mli -bs-no-builtin-ppx-ml -bs-no-implicit-include  ${bs_package_includes} ${bsc_lib_includes} ${bsc_extra_includes} ${warnings} ${bsc_flags} -o ${out} -c  ${in} $postbuild
   depfile = ${in}.d
   description = [34mBuilding[39m [2m${out}[22m
-build src/Actor-NactRecron.cmj |  $src_root_dir/src/Actor.bs.js : build_cmj_only src/Actor.mlast |  src/Actor-NactRecron.cmi
+build src/NactCron.cmj |  $src_root_dir/src/NactCron.bs.js : build_cmj_only src/NactCron.mlast |  src/NactCron.cmi
   bsc_flags = $bsc_flags -bs-re-out -bs-super-errors
   bs_package_flags = $bs_package_flags  -bs-package-output commonjs:src
-build src/Evaluators.mliast : build_ast_and_module_sets_from_rei $src_root_dir/src/Evaluators.rei
-build src/Evaluators.mliast.d : build_deps src/Evaluators.mliast
-build src/Evaluators-NactRecron.cmi : build_cmi src/Evaluators.mliast
+build src/NactCron_Evaluators.mliast : build_ast_and_module_sets_from_rei $src_root_dir/src/NactCron_Evaluators.rei
+build src/NactCron_Evaluators.mliast.d : build_deps src/NactCron_Evaluators.mliast
+build src/NactCron_Evaluators.cmi : build_cmi src/NactCron_Evaluators.mliast
   bsc_flags = $bsc_flags -bs-re-out -bs-super-errors
   bs_package_flags = $bs_package_flags  -bs-package-output commonjs:src
-build src/Evaluators.mlast : build_ast_and_module_sets_from_re $src_root_dir/src/Evaluators.re
-build src/Evaluators.mlast.d : build_deps src/Evaluators.mlast
-build src/Evaluators-NactRecron.cmj |  $src_root_dir/src/Evaluators.bs.js : build_cmj_only src/Evaluators.mlast |  src/Evaluators-NactRecron.cmi
+build src/NactCron_Evaluators.mlast : build_ast_and_module_sets_from_re $src_root_dir/src/NactCron_Evaluators.re
+build src/NactCron_Evaluators.mlast.d : build_deps src/NactCron_Evaluators.mlast
+build src/NactCron_Evaluators.cmj |  $src_root_dir/src/NactCron_Evaluators.bs.js : build_cmj_only src/NactCron_Evaluators.mlast |  src/NactCron_Evaluators.cmi
   bsc_flags = $bsc_flags -bs-re-out -bs-super-errors
   bs_package_flags = $bs_package_flags  -bs-package-output commonjs:src
-build src/Expression.mliast : build_ast_and_module_sets_from_rei $src_root_dir/src/Expression.rei
-build src/Expression.mliast.d : build_deps src/Expression.mliast
-build src/Expression-NactRecron.cmi : build_cmi src/Expression.mliast
+build src/NactCron_Expression.mliast : build_ast_and_module_sets_from_rei $src_root_dir/src/NactCron_Expression.rei
+build src/NactCron_Expression.mliast.d : build_deps src/NactCron_Expression.mliast
+build src/NactCron_Expression.cmi : build_cmi src/NactCron_Expression.mliast
   bsc_flags = $bsc_flags -bs-re-out -bs-super-errors
   bs_package_flags = $bs_package_flags  -bs-package-output commonjs:src
-build src/Expression.mlast : build_ast_and_module_sets_from_re $src_root_dir/src/Expression.re
-build src/Expression.mlast.d : build_deps src/Expression.mlast
-build src/Expression-NactRecron.cmj |  $src_root_dir/src/Expression.bs.js : build_cmj_only src/Expression.mlast |  src/Expression-NactRecron.cmi
+build src/NactCron_Expression.mlast : build_ast_and_module_sets_from_re $src_root_dir/src/NactCron_Expression.re
+build src/NactCron_Expression.mlast.d : build_deps src/NactCron_Expression.mlast
+build src/NactCron_Expression.cmj |  $src_root_dir/src/NactCron_Expression.bs.js : build_cmj_only src/NactCron_Expression.mlast |  src/NactCron_Expression.cmi
   bsc_flags = $bsc_flags -bs-re-out -bs-super-errors
   bs_package_flags = $bs_package_flags  -bs-package-output commonjs:src
-build src/Scheduling.mliast : build_ast_and_module_sets_from_rei $src_root_dir/src/Scheduling.rei
-build src/Scheduling.mliast.d : build_deps src/Scheduling.mliast
-build src/Scheduling-NactRecron.cmi : build_cmi src/Scheduling.mliast
+build src/NactCron_Scheduling.mliast : build_ast_and_module_sets_from_rei $src_root_dir/src/NactCron_Scheduling.rei
+build src/NactCron_Scheduling.mliast.d : build_deps src/NactCron_Scheduling.mliast
+build src/NactCron_Scheduling.cmi : build_cmi src/NactCron_Scheduling.mliast
   bsc_flags = $bsc_flags -bs-re-out -bs-super-errors
   bs_package_flags = $bs_package_flags  -bs-package-output commonjs:src
-build src/Scheduling.mlast : build_ast_and_module_sets_from_re $src_root_dir/src/Scheduling.re
-build src/Scheduling.mlast.d : build_deps src/Scheduling.mlast
-build src/Scheduling-NactRecron.cmj |  $src_root_dir/src/Scheduling.bs.js : build_cmj_only src/Scheduling.mlast |  src/Scheduling-NactRecron.cmi
+build src/NactCron_Scheduling.mlast : build_ast_and_module_sets_from_re $src_root_dir/src/NactCron_Scheduling.re
+build src/NactCron_Scheduling.mlast.d : build_deps src/NactCron_Scheduling.mlast
+build src/NactCron_Scheduling.cmj |  $src_root_dir/src/NactCron_Scheduling.bs.js : build_cmj_only src/NactCron_Scheduling.mlast |  src/NactCron_Scheduling.cmi
   bsc_flags = $bsc_flags -bs-re-out -bs-super-errors
   bs_package_flags = $bs_package_flags  -bs-package-output commonjs:src
-rule build_package
-  command = ${bsc} -w -49 -no-alias-deps -c ${in}
-  description = [34mBuilding[39m [2m${out}[22m
-build NactRecron.cmi : build_package NactRecron.mlmap
-build build.ninja : phony  ||  NactRecron.cmi src/Scheduling.mlast.d src/Scheduling.mliast.d src/Expression.mlast.d src/Expression.mliast.d src/Evaluators.mlast.d src/Evaluators.mliast.d src/Actor.mlast.d src/Actor.mliast.d __tests__/EvaulatorTest.mlast.d __tests__/ParserTest.mlast.d
+build build.ninja : phony  ||  src/NactCron_Scheduling.mlast.d src/NactCron_Scheduling.mliast.d src/NactCron_Expression.mlast.d src/NactCron_Expression.mliast.d src/NactCron_Evaluators.mlast.d src/NactCron_Evaluators.mliast.d src/NactCron.mlast.d src/NactCron.mliast.d __tests__/SchedulingTest.mlast.d __tests__/EvaulatorTest.mlast.d __tests__/ParserTest.mlast.d __tests__/ActorTest.mlast.d

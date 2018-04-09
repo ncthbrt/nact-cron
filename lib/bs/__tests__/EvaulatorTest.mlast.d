@@ -1,1 +1,1 @@
-__tests__/EvaulatorTest-NactRecron.cmj : src/Evaluators-NactRecron.cmj
+__tests__/EvaulatorTest.cmj : src/NactCron_Evaluators.cmj

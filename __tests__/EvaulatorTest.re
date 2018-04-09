@@ -2,7 +2,9 @@ open Jest;
 
 open ExpectJs;
 
-open Evaluators;
+open NactCron_Evaluators;
+
+module Evaluators = NactCron_Evaluators;
 
 let daysInMonths: list((int, int)) = [
   (1, 31), /* JAN */
@@ -51,7 +53,7 @@ let testRandomValues = (size, lowerBound, upperBound, f) => {
       ++ string_of_int(i)
       ++ " which is in the set of supplied values should evaluate to true",
       () =>
-      expect(f(i, `Values(values))) |> toBe(true)
+      expect(f(i, `Values(values))) |> toEqual(true)
     );
   let outOfValuesTest = i =>
     test(
@@ -59,7 +61,7 @@ let testRandomValues = (size, lowerBound, upperBound, f) => {
       ++ string_of_int(i)
       ++ " which is not in the set of supplied values should evaluate to false",
       () =>
-      expect(f(i, `Values(values))) |> toBe(false)
+      expect(f(i, `Values(values))) |> toEqual(false)
     );
   inValues |. Belt.List.forEach(inValuesTest);
   outOfValues |. Belt.List.forEach(outOfValuesTest);
@@ -87,7 +89,7 @@ let testIsInExpr = (name, f, ~lowerBound=0, ~upperBound) => {
         ++ string_of_int(step)
         ++ " should evaluate to true",
         () =>
-        expect(f(i, `Interval((start, end_, step)))) |> toBe(true)
+        expect(f(i, `Interval((start, end_, step)))) |> toEqual(true)
       );
     let outOfIntervalTest = i =>
       test(
@@ -101,7 +103,7 @@ let testIsInExpr = (name, f, ~lowerBound=0, ~upperBound) => {
         ++ string_of_int(step)
         ++ " should evaluate to false",
         () =>
-        expect(f(i, `Interval((start, end_, step)))) |> toBe(false)
+        expect(f(i, `Interval((start, end_, step)))) |> toEqual(false)
       );
     interval |. Belt.Array.forEach(inIntervalTest);
     Belt.Array.range(start, end_)
@@ -111,14 +113,20 @@ let testIsInExpr = (name, f, ~lowerBound=0, ~upperBound) => {
   describe(
     name,
     () => {
-      test("`Wildcard always evaluate to true", () =>
-        expect(f(randomTime(), `Wildcard)) |> toBe(true)
+      describe("`Wildcard", () =>
+        test("`Wildcard always evaluate to true", () =>
+          expect(f(randomTime(), `Wildcard)) |> toEqual(true)
+        )
       );
-      Belt.Range.forEach(0, 3, testRandomInterval);
-      Belt.Range.forEach(
-        0,
-        4,
-        testRandomValues(_, lowerBound, upperBound, f),
+      describe("`Interval", () =>
+        Belt.Range.forEach(0, 3, testRandomInterval)
+      );
+      describe("`Values", () =>
+        Belt.Range.forEach(
+          0,
+          4,
+          testRandomValues(_, lowerBound, upperBound, f),
+        )
       );
     },
   );
@@ -162,7 +170,7 @@ describe("isInYear", () => {
         ++ " should evaluate to true",
         () =>
         expect(isInYear(i, `Interval((intervalStart, intervalEnd, step))))
-        |> toBe(true)
+        |> toEqual(true)
       );
     let outOfIntervalTest = i =>
       test(
@@ -182,30 +190,48 @@ describe("isInYear", () => {
         ++ " should evaluate to false",
         () =>
         expect(isInYear(i, `Interval((intervalStart, intervalEnd, step))))
-        |> toBe(false)
+        |> toEqual(false)
       );
     interval |. Belt.Array.forEach(inIntervalTest);
     interval
     |. Belt.Array.keep(i => ! Belt.Array.some(interval, j => i == j))
     |. Belt.Array.forEach(outOfIntervalTest);
   };
-  test("`Wildcard always evaluate to true", () =>
-    expect(isInYear(Random.int(3000), `Wildcard)) |> toBe(true)
+  describe("`Wildcard", () =>
+    test("`Wildcard always evaluate to true", () =>
+      expect(isInYear(Random.int(3000), `Wildcard)) |> toEqual(true)
+    )
   );
-  Belt.Range.forEach(0, 4, testRandomValues(_, 2000, 3000, isInYear));
-  Belt.Range.forEach(0, 2, testRandomInterval(~openStart=true));
-  Belt.Range.forEach(0, 2, testRandomInterval(~openEnd=true));
-  Belt.Range.forEach(0, 2, testRandomInterval);
+  describe("`Values", () =>
+    Belt.Range.forEach(0, 4, testRandomValues(_, 2000, 3000, isInYear))
+  );
+  describe("`Interval", () => {
+    Belt.Range.forEach(0, 2, testRandomInterval(~openStart=true));
+    Belt.Range.forEach(0, 2, testRandomInterval(~openEnd=true));
+    Belt.Range.forEach(
+      0,
+      2,
+      testRandomInterval(~openEnd=true, ~openStart=true),
+    );
+    Belt.Range.forEach(0, 2, testRandomInterval);
+  });
 });
 
 let testWildcard = f =>
-  test("`Wildcard always evaluate to true", () => {
-    let daysInMonth = 28 + Random.int(4);
-    expect(
-      f(daysInMonth, Random.int(daysInMonth + 1), Random.int(7), `Wildcard),
-    )
-    |> toBe(true);
-  });
+  describe("`Wildcard", () =>
+    test("`Wildcard always evaluate to true", () => {
+      let daysInMonth = 28 + Random.int(4);
+      expect(
+        f(
+          daysInMonth,
+          Random.int(daysInMonth + 1),
+          Random.int(7),
+          `Wildcard,
+        ),
+      )
+      |> toEqual(true);
+    })
+  );
 
 describe("isInDayOfWeek", () => {
   let randomTime = () => randomTime(~start=0, ~end_=6, ~step=1);
@@ -232,7 +258,7 @@ describe("isInDayOfWeek", () => {
             `Values(values),
           ),
         )
-        |> toBe(true)
+        |> toEqual(true)
       );
     };
     let outOfValuesTest = i => {
@@ -250,7 +276,7 @@ describe("isInDayOfWeek", () => {
             `Values(values),
           ),
         )
-        |> toBe(false)
+        |> toEqual(false)
       );
     };
     inValues |. Belt.List.forEach(inValuesTest);
@@ -284,7 +310,7 @@ describe("isInDayOfWeek", () => {
               `Interval((start, end_, step)),
             ),
           )
-          |> toBe(true);
+          |> toEqual(true);
         },
       );
     let outOfIntervalTest = i =>
@@ -308,7 +334,7 @@ describe("isInDayOfWeek", () => {
               `Interval((start, end_, step)),
             ),
           )
-          |> toBe(false);
+          |> toEqual(false);
         },
       );
     interval |. Belt.Array.forEach(inIntervalTest);
@@ -332,7 +358,7 @@ describe("isInDayOfWeek", () => {
           `NthDayOfWeekInMonth((dayOfWeek, 3)),
         ),
       )
-      |. toBe(false, _)
+      |. toEqual(false, _)
     );
     test(
       "3rd "
@@ -348,7 +374,7 @@ describe("isInDayOfWeek", () => {
           `NthDayOfWeekInMonth((dayOfWeek, 3)),
         ),
       )
-      |. toBe(true, _)
+      |. toEqual(true, _)
     );
     test(
       "3rd "
@@ -364,17 +390,107 @@ describe("isInDayOfWeek", () => {
           `NthDayOfWeekInMonth((dayOfWeek, 3)),
         ),
       )
-      |. toBe(false, _)
+      |. toEqual(false, _)
     );
   };
-  let testLastDayOfWeekInMonth = dayOfWeek => ();
+  let testLastDayOfWeekInMonth = dayOfWeek => {
+    let offset = Random.int(7);
+    let lengthOfMonth = 28 + Random.int(4);
+    let lastDayOfWeekInMonth = lengthOfMonth - offset;
+    let secondLastDayOfWeekInMonth = lengthOfMonth - offset - 7;
+    test(
+      "The last "
+      ++ intToDay(dayOfWeek)
+      ++ " of the month should evaluate to true",
+      () =>
+      expect(
+        isInDayOfWeek(
+          ~daysInMonth=lengthOfMonth,
+          ~dayOfMonth=lastDayOfWeekInMonth,
+          ~dayOfWeek,
+          `LastDayOfWeekInMonth(dayOfWeek),
+        ),
+      )
+      |. toEqual(true, _)
+    );
+    test(
+      "The last "
+      ++ intToDay((dayOfWeek + 1) mod 7)
+      ++ " of the month should evaluate to false as expecting the last "
+      ++ intToDay(dayOfWeek),
+      () =>
+      expect(
+        isInDayOfWeek(
+          ~daysInMonth=lengthOfMonth,
+          ~dayOfMonth=lastDayOfWeekInMonth,
+          ~dayOfWeek=(dayOfWeek + 1) mod 7,
+          `LastDayOfWeekInMonth(dayOfWeek),
+        ),
+      )
+      |. toEqual(false, _)
+    );
+    test(
+      "The second last "
+      ++ intToDay(dayOfWeek)
+      ++ " of the month should evaluate to false",
+      () =>
+      expect(
+        isInDayOfWeek(
+          ~daysInMonth=lengthOfMonth,
+          ~dayOfMonth=secondLastDayOfWeekInMonth,
+          ~dayOfWeek,
+          `LastDayOfWeekInMonth(dayOfWeek),
+        ),
+      )
+      |. toEqual(false, _)
+    );
+    test(
+      "The last "
+      ++ intToDay((dayOfWeek + 1) mod 7)
+      ++ " of the month should evaluate to false as expecting the last "
+      ++ intToDay(dayOfWeek),
+      () =>
+      expect(
+        isInDayOfWeek(
+          ~daysInMonth=lengthOfMonth,
+          ~dayOfMonth=(secondLastDayOfWeekInMonth + 1) mod 7,
+          ~dayOfWeek,
+          `LastDayOfWeekInMonth(dayOfWeek),
+        ),
+      )
+      |. toEqual(false, _)
+    );
+    test(
+      "The second last "
+      ++ intToDay(dayOfWeek)
+      ++ " of the month should evaluate to false",
+      () =>
+      expect(
+        isInDayOfWeek(
+          ~daysInMonth=lengthOfMonth,
+          ~dayOfMonth=secondLastDayOfWeekInMonth,
+          ~dayOfWeek,
+          `LastDayOfWeekInMonth(dayOfWeek),
+        ),
+      )
+      |. toEqual(false, _)
+    );
+  };
   testWildcard((daysInMonth, dayOfMonth, dayOfWeek, daysOfWeek) =>
     isInDayOfWeek(~daysInMonth, ~dayOfMonth, ~dayOfWeek, daysOfWeek)
   );
-  Belt.Range.forEach(0, 6, testLastDayOfWeekInMonth);
-  Belt.Range.forEach(0, 6, testNthDayOfWeekInMonth);
-  Belt.Range.forEach(0, 4, testRandomValues);
-  Belt.Range.forEach(0, 4, testRandomInterval);
+  describe("`LastDayOfWeekInMonth", () =>
+    Belt.Range.forEach(0, 6, testLastDayOfWeekInMonth)
+  );
+  describe("`NthDayOfWeekInMonth", () =>
+    Belt.Range.forEach(0, 6, testNthDayOfWeekInMonth)
+  );
+  describe("`Values", () =>
+    Belt.Range.forEach(0, 4, testRandomValues)
+  );
+  describe("`Interval", () =>
+    Belt.Range.forEach(0, 4, testRandomInterval)
+  );
 });
 
 describe("isInDayOfMonth", () => {
@@ -408,7 +524,7 @@ describe("isInDayOfMonth", () => {
               `Interval((start, end_, step)),
             ),
           )
-          |> toBe(true);
+          |> toEqual(true);
         },
       );
     let outOfIntervalTest = i =>
@@ -433,7 +549,7 @@ describe("isInDayOfMonth", () => {
               `Interval((start, end_, step)),
             ),
           )
-          |> toBe(false);
+          |> toEqual(false);
         },
       );
     interval |. Belt.Array.forEach(inIntervalTest);
@@ -465,7 +581,7 @@ describe("isInDayOfMonth", () => {
             `Values(values),
           ),
         )
-        |> toBe(true)
+        |> toEqual(true)
       );
     };
     let outOfValuesTest = i => {
@@ -484,7 +600,7 @@ describe("isInDayOfMonth", () => {
             `Values(values),
           ),
         )
-        |> toBe(false)
+        |> toEqual(false)
       );
     };
     inValues |. Belt.List.forEach(inValuesTest);
@@ -509,7 +625,7 @@ describe("isInDayOfMonth", () => {
                  `DaysBeforeEndOfMonth(n),
                ),
              )
-             |> toBe(true);
+             |> toEqual(true);
            },
          )
        );
@@ -534,15 +650,185 @@ describe("isInDayOfMonth", () => {
                  `DaysBeforeEndOfMonth(n),
                ),
              )
-             |> toBe(false);
+             |> toEqual(false);
            },
          )
        );
   };
+  describe("`NearestWeekdayToDay", () => {
+    let testRandomWeekday = (_) => {
+      let dayOfWeek = Random.int(5) + 1;
+      let daysInMonth = 28 + Random.int(4);
+      let dayOfMonth = Random.int(daysInMonth + 1);
+      test(
+        intToDay(dayOfWeek)
+        ++ ", "
+        ++ string_of_int(dayOfMonth)
+        ++ " should evaluate to true as it is the nearest  weekday to day "
+        ++ string_of_int(dayOfMonth)
+        ++ " of the month",
+        () =>
+        expect(
+          isInDayOfMonth(
+            ~daysInMonth,
+            ~dayOfWeek,
+            ~dayOfMonth,
+            `NearestWeekday(dayOfMonth),
+          ),
+        )
+        |> toEqual(true)
+      );
+    };
+    let testRandomWeekend = (_) => {
+      let daysInMonth = Random.int(4) + 28;
+      let dayOfMonth = Random.int(daysInMonth + 1);
+      test(
+        "Weekend on day "
+        ++ string_of_int(dayOfMonth)
+        ++ " of the month should evaluate to false as while it's the correct day of month, it's not a weekday.",
+        () =>
+        expect(
+          isInDayOfMonth(
+            ~daysInMonth,
+            ~dayOfWeek=Random.int(2) == 1 ? 6 : 0,
+            ~dayOfMonth,
+            `NearestWeekday(dayOfMonth),
+          ),
+        )
+        |> toEqual(false)
+      );
+    };
+    test(
+      "A Friday two days before the end of the month when targeting the nearest weekday to the last day of the a specific month should evaluate to true",
+      () => {
+        let daysInMonth = Random.int(4) + 28;
+        expect(
+          isInDayOfMonth(
+            ~daysInMonth,
+            ~dayOfWeek=5,
+            ~dayOfMonth=daysInMonth - 2,
+            `NearestWeekday(daysInMonth),
+          ),
+        )
+        |> toEqual(true);
+      },
+    );
+    test(
+      "A Friday three days before the end of the month when targeting the nearest weekday to the last day of the a specific month should evaluate to false",
+      () => {
+        let daysInMonth = Random.int(4) + 28;
+        expect(
+          isInDayOfMonth(
+            ~daysInMonth,
+            ~dayOfWeek=5,
+            ~dayOfMonth=daysInMonth - 3,
+            `NearestWeekday(daysInMonth),
+          ),
+        )
+        |> toEqual(false);
+      },
+    );
+    test(
+      "A Monday the day after the scheduled day in the same month should evaluate to true as it's the nearest weekday",
+      () => {
+        let daysInMonth = Random.int(4) + 28;
+        let dayOfMonth = Random.int(daysInMonth);
+        expect(
+          isInDayOfMonth(
+            ~daysInMonth,
+            ~dayOfWeek=1,
+            ~dayOfMonth,
+            `NearestWeekday(dayOfMonth - 1),
+          ),
+        )
+        |> toEqual(true);
+      },
+    );
+    test(
+      "A Friday the day before the scheduled day in the same month should evaluate to true as it's the nearest weekday",
+      () => {
+        let daysInMonth = Random.int(4) + 28;
+        let scheduledDayOfMonth = Random.int(daysInMonth);
+        expect(
+          isInDayOfMonth(
+            ~daysInMonth,
+            ~dayOfWeek=5,
+            ~dayOfMonth=scheduledDayOfMonth - 1,
+            `NearestWeekday(scheduledDayOfMonth),
+          ),
+        )
+        |> toEqual(true);
+      },
+    );
+    Belt.Array.range(0, 3) |. Belt.Array.forEach(testRandomWeekday);
+    Belt.Array.range(0, 3) |. Belt.Array.forEach(testRandomWeekend);
+  });
   testWildcard((daysInMonth, dayOfMonth, dayOfWeek, daysOfWeek) =>
     isInDayOfMonth(~daysInMonth, ~dayOfMonth, ~dayOfWeek, daysOfWeek)
   );
-  Belt.Range.forEach(0, 4, testRandomValues);
-  Belt.Range.forEach(0, 4, testNthLastDayOfMonth);
-  Belt.Range.forEach(0, 4, testRandomInterval);
+  describe("`LastWeekdayOfMonth", () => {
+    test(
+      "A weekday at the end of the month should always evaluate to true", () => {
+      let daysInMonth = Random.int(4) + 28;
+      expect(
+        isInDayOfMonth(
+          ~daysInMonth,
+          ~dayOfWeek=Random.int(5) + 1,
+          ~dayOfMonth=daysInMonth,
+          `LastWeekdayOfMonth,
+        ),
+      )
+      |> toEqual(true);
+    });
+    test(
+      "A weekend at the end of the month should always evaluate to false", () => {
+      let daysInMonth = Random.int(4) + 28;
+      expect(
+        isInDayOfMonth(
+          ~daysInMonth,
+          ~dayOfWeek=(Random.int(2) + 6) mod 7,
+          ~dayOfMonth=daysInMonth,
+          `LastWeekdayOfMonth,
+        ),
+      )
+      |> toEqual(false);
+    });
+    test(
+      "A Friday the day before the end of the month should always evaluate to true",
+      () => {
+      let daysInMonth = Random.int(4) + 28;
+      expect(
+        isInDayOfMonth(
+          ~daysInMonth,
+          ~dayOfWeek=5,
+          ~dayOfMonth=daysInMonth - 1,
+          `LastWeekdayOfMonth,
+        ),
+      )
+      |> toEqual(true);
+    });
+    test(
+      "A Friday two days before the end of the month should always evaluate to true",
+      () => {
+      let daysInMonth = Random.int(4) + 28;
+      expect(
+        isInDayOfMonth(
+          ~daysInMonth,
+          ~dayOfWeek=5,
+          ~dayOfMonth=daysInMonth - 2,
+          `LastWeekdayOfMonth,
+        ),
+      )
+      |> toEqual(true);
+    });
+  });
+  describe("`Values", () =>
+    Belt.Range.forEach(0, 4, testRandomValues)
+  );
+  describe("`DaysBeforeEndOfMonth", () =>
+    Belt.Range.forEach(0, 4, testNthLastDayOfMonth)
+  );
+  describe("`Interval", () =>
+    Belt.Range.forEach(0, 4, testRandomInterval)
+  );
 });

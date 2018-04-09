@@ -10,7 +10,7 @@ var Belt_Range = require("bs-platform/lib/js/belt_Range.js");
 var Caml_int32 = require("bs-platform/lib/js/caml_int32.js");
 var Belt_Option = require("bs-platform/lib/js/belt_Option.js");
 var Js_primitive = require("bs-platform/lib/js/js_primitive.js");
-var Evaluators$NactRecron = require("../src/Evaluators.bs.js");
+var NactCron_Evaluators = require("../src/NactCron_Evaluators.bs.js");
 
 var daysInMonths = /* :: */[
   /* tuple */[
@@ -132,7 +132,7 @@ function testRandomValues(size, lowerBound, upperBound, f) {
         }));
   var inValuesTest = function (i) {
     return Jest.test("Time " + (String(i) + " which is in the set of supplied values should evaluate to true"), (function () {
-                  return Jest.ExpectJs[/* toBe */2](/* true */1, Jest.ExpectJs[/* expect */0](Curry._2(f, i, /* `Values */[
+                  return Jest.ExpectJs[/* toEqual */12](/* true */1, Jest.ExpectJs[/* expect */0](Curry._2(f, i, /* `Values */[
                                       72054786,
                                       values
                                     ])));
@@ -140,7 +140,7 @@ function testRandomValues(size, lowerBound, upperBound, f) {
   };
   var outOfValuesTest = function (i) {
     return Jest.test("Time " + (String(i) + " which is not in the set of supplied values should evaluate to false"), (function () {
-                  return Jest.ExpectJs[/* toBe */2](/* false */0, Jest.ExpectJs[/* expect */0](Curry._2(f, i, /* `Values */[
+                  return Jest.ExpectJs[/* toEqual */12](/* false */0, Jest.ExpectJs[/* expect */0](Curry._2(f, i, /* `Values */[
                                       72054786,
                                       values
                                     ])));
@@ -167,7 +167,7 @@ function testIsInExpr(name, f, $staropt$star, upperBound) {
     var interval = Belt_Array.rangeBy(start, end_, step);
     var inIntervalTest = function (i) {
       return Jest.test("Time " + (String(i) + (" which is inside the interval [" + (String(start) + (", " + (String(end_) + ("] with a step size of " + (String(step) + " should evaluate to true"))))))), (function () {
-                    return Jest.ExpectJs[/* toBe */2](/* true */1, Jest.ExpectJs[/* expect */0](Curry._2(f, i, /* `Interval */[
+                    return Jest.ExpectJs[/* toEqual */12](/* true */1, Jest.ExpectJs[/* expect */0](Curry._2(f, i, /* `Interval */[
                                         36582757,
                                         /* tuple */[
                                           start,
@@ -179,7 +179,7 @@ function testIsInExpr(name, f, $staropt$star, upperBound) {
     };
     var outOfIntervalTest = function (i) {
       return Jest.test("Time " + (String(i) + (" which is outside of the interval [" + (String(start) + (", " + (String(end_) + ("] with a step size of " + (String(step) + " should evaluate to false"))))))), (function () {
-                    return Jest.ExpectJs[/* toBe */2](/* false */0, Jest.ExpectJs[/* expect */0](Curry._2(f, i, /* `Interval */[
+                    return Jest.ExpectJs[/* toEqual */12](/* false */0, Jest.ExpectJs[/* expect */0](Curry._2(f, i, /* `Interval */[
                                         36582757,
                                         /* tuple */[
                                           start,
@@ -197,20 +197,27 @@ function testIsInExpr(name, f, $staropt$star, upperBound) {
                     })), outOfIntervalTest);
   };
   describe(name, (function () {
-          Jest.test("`Wildcard always evaluate to true", (function () {
-                  return Jest.ExpectJs[/* toBe */2](/* true */1, Jest.ExpectJs[/* expect */0](Curry._2(f, randomTime$1(/* None */0, /* None */0, /* None */0, /* () */0), /* Wildcard */46765562)));
+          describe("`Wildcard", (function () {
+                  return Jest.test("`Wildcard always evaluate to true", (function () {
+                                return Jest.ExpectJs[/* toEqual */12](/* true */1, Jest.ExpectJs[/* expect */0](Curry._2(f, randomTime$1(/* None */0, /* None */0, /* None */0, /* () */0), /* Wildcard */46765562)));
+                              }));
                 }));
-          Belt_Range.forEach(0, 3, testRandomInterval);
-          return Belt_Range.forEach(0, 4, (function (__x) {
-                        return testRandomValues(__x, lowerBound, upperBound, f);
-                      }));
+          describe("`Interval", (function () {
+                  return Belt_Range.forEach(0, 3, testRandomInterval);
+                }));
+          describe("`Values", (function () {
+                  return Belt_Range.forEach(0, 4, (function (__x) {
+                                return testRandomValues(__x, lowerBound, upperBound, f);
+                              }));
+                }));
+          return /* () */0;
         }));
   return /* () */0;
 }
 
-testIsInExpr("isInHour", Evaluators$NactRecron.isInHour, /* Some */[0], 23);
+testIsInExpr("isInHour", NactCron_Evaluators.isInHour, /* Some */[0], 23);
 
-testIsInExpr("isInMonth", Evaluators$NactRecron.isInMonth, /* Some */[0], 23);
+testIsInExpr("isInMonth", NactCron_Evaluators.isInMonth, /* Some */[0], 23);
 
 describe("isInYear", (function () {
         var testRandomInterval = function ($staropt$star, $staropt$star$1, _) {
@@ -224,7 +231,7 @@ describe("isInYear", (function () {
           var interval = Belt_Array.rangeBy(Belt_Option.getWithDefault(intervalStart, 0), Belt_Option.getWithDefault(intervalEnd, 3000), step);
           var inIntervalTest = function (i) {
             return Jest.test("Time " + (String(i) + (" which is inside the interval [" + (Belt_Option.getWithDefault(Js_primitive.undefined_to_opt(JSON.stringify(intervalStart)), "") + (", " + (Belt_Option.getWithDefault(Js_primitive.undefined_to_opt(JSON.stringify(intervalEnd)), "") + ("] with a step size of " + (String(step) + " should evaluate to true"))))))), (function () {
-                          return Jest.ExpectJs[/* toBe */2](/* true */1, Jest.ExpectJs[/* expect */0](Evaluators$NactRecron.isInYear(i, /* `Interval */[
+                          return Jest.ExpectJs[/* toEqual */12](/* true */1, Jest.ExpectJs[/* expect */0](NactCron_Evaluators.isInYear(i, /* `Interval */[
                                               36582757,
                                               /* tuple */[
                                                 intervalStart,
@@ -236,7 +243,7 @@ describe("isInYear", (function () {
           };
           var outOfIntervalTest = function (i) {
             return Jest.test("Time " + (String(i) + (" which is outside of the interval [" + (Belt_Option.getWithDefault(Js_primitive.undefined_to_opt(JSON.stringify(intervalStart)), "") + (", " + (Belt_Option.getWithDefault(Js_primitive.undefined_to_opt(JSON.stringify(intervalEnd)), "") + ("] with a step size of " + (String(step) + " should evaluate to false"))))))), (function () {
-                          return Jest.ExpectJs[/* toBe */2](/* false */0, Jest.ExpectJs[/* expect */0](Evaluators$NactRecron.isInYear(i, /* `Interval */[
+                          return Jest.ExpectJs[/* toEqual */12](/* false */0, Jest.ExpectJs[/* expect */0](NactCron_Evaluators.isInYear(i, /* `Interval */[
                                               36582757,
                                               /* tuple */[
                                                 intervalStart,
@@ -253,34 +260,49 @@ describe("isInYear", (function () {
                                         }));
                           })), outOfIntervalTest);
         };
-        Jest.test("`Wildcard always evaluate to true", (function () {
-                return Jest.ExpectJs[/* toBe */2](/* true */1, Jest.ExpectJs[/* expect */0](Evaluators$NactRecron.isInYear(Random.$$int(3000), /* Wildcard */46765562)));
+        describe("`Wildcard", (function () {
+                return Jest.test("`Wildcard always evaluate to true", (function () {
+                              return Jest.ExpectJs[/* toEqual */12](/* true */1, Jest.ExpectJs[/* expect */0](NactCron_Evaluators.isInYear(Random.$$int(3000), /* Wildcard */46765562)));
+                            }));
               }));
-        Belt_Range.forEach(0, 4, (function (__x) {
-                return testRandomValues(__x, 2000, 3000, Evaluators$NactRecron.isInYear);
+        describe("`Values", (function () {
+                return Belt_Range.forEach(0, 4, (function (__x) {
+                              return testRandomValues(__x, 2000, 3000, NactCron_Evaluators.isInYear);
+                            }));
               }));
-        var partial_arg = /* Some */[/* true */1];
-        Belt_Range.forEach(0, 2, (function (eta) {
-                var param = /* None */0;
-                var param$1 = eta;
-                return testRandomInterval(partial_arg, param, param$1);
-              }));
-        Belt_Range.forEach(0, 2, (function (eta) {
+        describe("`Interval", (function () {
                 var partial_arg = /* Some */[/* true */1];
-                return (function (param) {
-                            return testRandomInterval(/* None */0, partial_arg, param);
-                          })(eta);
+                Belt_Range.forEach(0, 2, (function (eta) {
+                        var param = /* None */0;
+                        var param$1 = eta;
+                        return testRandomInterval(partial_arg, param, param$1);
+                      }));
+                Belt_Range.forEach(0, 2, (function (eta) {
+                        var partial_arg = /* Some */[/* true */1];
+                        return (function (param) {
+                                    return testRandomInterval(/* None */0, partial_arg, param);
+                                  })(eta);
+                      }));
+                var partial_arg$1 = /* Some */[/* true */1];
+                var partial_arg$2 = /* Some */[/* true */1];
+                Belt_Range.forEach(0, 2, (function (param) {
+                        return testRandomInterval(partial_arg$2, partial_arg$1, param);
+                      }));
+                return Belt_Range.forEach(0, 2, (function (eta) {
+                              return testRandomInterval(/* None */0, /* None */0, eta);
+                            }));
               }));
-        return Belt_Range.forEach(0, 2, (function (eta) {
-                      return testRandomInterval(/* None */0, /* None */0, eta);
-                    }));
+        return /* () */0;
       }));
 
 function testWildcard(f) {
-  return Jest.test("`Wildcard always evaluate to true", (function () {
-                var daysInMonth = 28 + Random.$$int(4) | 0;
-                return Jest.ExpectJs[/* toBe */2](/* true */1, Jest.ExpectJs[/* expect */0](Curry._4(f, daysInMonth, Random.$$int(daysInMonth + 1 | 0), Random.$$int(7), /* Wildcard */46765562)));
-              }));
+  describe("`Wildcard", (function () {
+          return Jest.test("`Wildcard always evaluate to true", (function () {
+                        var daysInMonth = 28 + Random.$$int(4) | 0;
+                        return Jest.ExpectJs[/* toEqual */12](/* true */1, Jest.ExpectJs[/* expect */0](Curry._4(f, daysInMonth, Random.$$int(daysInMonth + 1 | 0), Random.$$int(7), /* Wildcard */46765562)));
+                      }));
+        }));
+  return /* () */0;
 }
 
 describe("isInDayOfWeek", (function () {
@@ -297,7 +319,7 @@ describe("isInDayOfWeek", (function () {
           var inValuesTest = function (i) {
             var daysInMonth = 28 + Random.$$int(4) | 0;
             return Jest.test("Time " + (String(i) + " which is in the set of supplied values should evaluate to true"), (function () {
-                          return Jest.ExpectJs[/* toBe */2](/* true */1, Jest.ExpectJs[/* expect */0](Evaluators$NactRecron.isInDayOfWeek(Random.$$int(daysInMonth + 1 | 0), i, daysInMonth, /* `Values */[
+                          return Jest.ExpectJs[/* toEqual */12](/* true */1, Jest.ExpectJs[/* expect */0](NactCron_Evaluators.isInDayOfWeek(Random.$$int(daysInMonth + 1 | 0), i, daysInMonth, /* `Values */[
                                               72054786,
                                               values
                                             ])));
@@ -306,7 +328,7 @@ describe("isInDayOfWeek", (function () {
           var outOfValuesTest = function (i) {
             var daysInMonth = 28 + Random.$$int(4) | 0;
             return Jest.test("Time " + (String(i) + " which is in the set of supplied values should evaluate to true"), (function () {
-                          return Jest.ExpectJs[/* toBe */2](/* false */0, Jest.ExpectJs[/* expect */0](Evaluators$NactRecron.isInDayOfWeek(Random.$$int(daysInMonth + 1 | 0), i, daysInMonth, /* `Values */[
+                          return Jest.ExpectJs[/* toEqual */12](/* false */0, Jest.ExpectJs[/* expect */0](NactCron_Evaluators.isInDayOfWeek(Random.$$int(daysInMonth + 1 | 0), i, daysInMonth, /* `Values */[
                                               72054786,
                                               values
                                             ])));
@@ -325,7 +347,7 @@ describe("isInDayOfWeek", (function () {
           var inIntervalTest = function (i) {
             return Jest.test("Time " + (String(i) + (" which is inside the interval [" + (String(start) + (", " + (String(end_) + ("] with a step size of " + (String(step) + " should evaluate to true"))))))), (function () {
                           var daysInMonth = 28 + Random.$$int(4) | 0;
-                          return Jest.ExpectJs[/* toBe */2](/* true */1, Jest.ExpectJs[/* expect */0](Evaluators$NactRecron.isInDayOfWeek(Random.$$int(daysInMonth + 1 | 0), i, daysInMonth, /* `Interval */[
+                          return Jest.ExpectJs[/* toEqual */12](/* true */1, Jest.ExpectJs[/* expect */0](NactCron_Evaluators.isInDayOfWeek(Random.$$int(daysInMonth + 1 | 0), i, daysInMonth, /* `Interval */[
                                               36582757,
                                               /* tuple */[
                                                 start,
@@ -338,7 +360,7 @@ describe("isInDayOfWeek", (function () {
           var outOfIntervalTest = function (i) {
             return Jest.test("Time " + (String(i) + (" which is outside of the interval [" + (String(start) + (", " + (String(end_) + ("] with a step size of " + (String(step) + " should evaluate to false"))))))), (function () {
                           var daysInMonth = 28 + Random.$$int(4) | 0;
-                          return Jest.ExpectJs[/* toBe */2](/* false */0, Jest.ExpectJs[/* expect */0](Evaluators$NactRecron.isInDayOfWeek(Random.$$int(daysInMonth + 1 | 0), i, daysInMonth, /* `Interval */[
+                          return Jest.ExpectJs[/* toEqual */12](/* false */0, Jest.ExpectJs[/* expect */0](NactCron_Evaluators.isInDayOfWeek(Random.$$int(daysInMonth + 1 | 0), i, daysInMonth, /* `Interval */[
                                               36582757,
                                               /* tuple */[
                                                 start,
@@ -358,46 +380,93 @@ describe("isInDayOfWeek", (function () {
         var testNthDayOfWeekInMonth = function (dayOfWeek) {
           var offset = Random.$$int(7);
           Jest.test("2nd " + (intToDay(dayOfWeek) + (" of the month should evaluate to false as expecting the 3rd " + intToDay(dayOfWeek))), (function () {
-                  var __x = Jest.ExpectJs[/* expect */0](Evaluators$NactRecron.isInDayOfWeek(offset + 7 | 0, dayOfWeek, 31, /* `NthDayOfWeekInMonth */[
+                  var __x = Jest.ExpectJs[/* expect */0](NactCron_Evaluators.isInDayOfWeek(offset + 7 | 0, dayOfWeek, 31, /* `NthDayOfWeekInMonth */[
                             -339304170,
                             /* tuple */[
                               dayOfWeek,
                               3
                             ]
                           ]));
-                  return Jest.ExpectJs[/* toBe */2](/* false */0, __x);
+                  return Jest.ExpectJs[/* toEqual */12](/* false */0, __x);
                 }));
           Jest.test("3rd " + (intToDay(dayOfWeek) + (" of the month should evaluate to true as expecting the 3rd " + intToDay(dayOfWeek))), (function () {
-                  var __x = Jest.ExpectJs[/* expect */0](Evaluators$NactRecron.isInDayOfWeek(offset + 14 | 0, dayOfWeek, 31, /* `NthDayOfWeekInMonth */[
+                  var __x = Jest.ExpectJs[/* expect */0](NactCron_Evaluators.isInDayOfWeek(offset + 14 | 0, dayOfWeek, 31, /* `NthDayOfWeekInMonth */[
                             -339304170,
                             /* tuple */[
                               dayOfWeek,
                               3
                             ]
                           ]));
-                  return Jest.ExpectJs[/* toBe */2](/* true */1, __x);
+                  return Jest.ExpectJs[/* toEqual */12](/* true */1, __x);
                 }));
           return Jest.test("3rd " + (intToDay((dayOfWeek + 1 | 0) % 7) + (" of the month should evaluate to false as expecting the 3rd " + intToDay(dayOfWeek))), (function () {
-                        var __x = Jest.ExpectJs[/* expect */0](Evaluators$NactRecron.isInDayOfWeek((offset + 14 | 0) + 1 | 0, (dayOfWeek + 1 | 0) % 7, 31, /* `NthDayOfWeekInMonth */[
+                        var __x = Jest.ExpectJs[/* expect */0](NactCron_Evaluators.isInDayOfWeek((offset + 14 | 0) + 1 | 0, (dayOfWeek + 1 | 0) % 7, 31, /* `NthDayOfWeekInMonth */[
                                   -339304170,
                                   /* tuple */[
                                     dayOfWeek,
                                     3
                                   ]
                                 ]));
-                        return Jest.ExpectJs[/* toBe */2](/* false */0, __x);
+                        return Jest.ExpectJs[/* toEqual */12](/* false */0, __x);
                       }));
         };
-        var testLastDayOfWeekInMonth = function () {
-          return /* () */0;
+        var testLastDayOfWeekInMonth = function (dayOfWeek) {
+          var offset = Random.$$int(7);
+          var lengthOfMonth = 28 + Random.$$int(4) | 0;
+          var lastDayOfWeekInMonth = lengthOfMonth - offset | 0;
+          var secondLastDayOfWeekInMonth = (lengthOfMonth - offset | 0) - 7 | 0;
+          Jest.test("The last " + (intToDay(dayOfWeek) + " of the month should evaluate to true"), (function () {
+                  var __x = Jest.ExpectJs[/* expect */0](NactCron_Evaluators.isInDayOfWeek(lastDayOfWeekInMonth, dayOfWeek, lengthOfMonth, /* `LastDayOfWeekInMonth */[
+                            -1029051830,
+                            dayOfWeek
+                          ]));
+                  return Jest.ExpectJs[/* toEqual */12](/* true */1, __x);
+                }));
+          Jest.test("The last " + (intToDay((dayOfWeek + 1 | 0) % 7) + (" of the month should evaluate to false as expecting the last " + intToDay(dayOfWeek))), (function () {
+                  var __x = Jest.ExpectJs[/* expect */0](NactCron_Evaluators.isInDayOfWeek(lastDayOfWeekInMonth, (dayOfWeek + 1 | 0) % 7, lengthOfMonth, /* `LastDayOfWeekInMonth */[
+                            -1029051830,
+                            dayOfWeek
+                          ]));
+                  return Jest.ExpectJs[/* toEqual */12](/* false */0, __x);
+                }));
+          Jest.test("The second last " + (intToDay(dayOfWeek) + " of the month should evaluate to false"), (function () {
+                  var __x = Jest.ExpectJs[/* expect */0](NactCron_Evaluators.isInDayOfWeek(secondLastDayOfWeekInMonth, dayOfWeek, lengthOfMonth, /* `LastDayOfWeekInMonth */[
+                            -1029051830,
+                            dayOfWeek
+                          ]));
+                  return Jest.ExpectJs[/* toEqual */12](/* false */0, __x);
+                }));
+          Jest.test("The last " + (intToDay((dayOfWeek + 1 | 0) % 7) + (" of the month should evaluate to false as expecting the last " + intToDay(dayOfWeek))), (function () {
+                  var __x = Jest.ExpectJs[/* expect */0](NactCron_Evaluators.isInDayOfWeek((secondLastDayOfWeekInMonth + 1 | 0) % 7, dayOfWeek, lengthOfMonth, /* `LastDayOfWeekInMonth */[
+                            -1029051830,
+                            dayOfWeek
+                          ]));
+                  return Jest.ExpectJs[/* toEqual */12](/* false */0, __x);
+                }));
+          return Jest.test("The second last " + (intToDay(dayOfWeek) + " of the month should evaluate to false"), (function () {
+                        var __x = Jest.ExpectJs[/* expect */0](NactCron_Evaluators.isInDayOfWeek(secondLastDayOfWeekInMonth, dayOfWeek, lengthOfMonth, /* `LastDayOfWeekInMonth */[
+                                  -1029051830,
+                                  dayOfWeek
+                                ]));
+                        return Jest.ExpectJs[/* toEqual */12](/* false */0, __x);
+                      }));
         };
         testWildcard((function (daysInMonth, dayOfMonth, dayOfWeek, daysOfWeek) {
-                return Evaluators$NactRecron.isInDayOfWeek(dayOfMonth, dayOfWeek, daysInMonth, daysOfWeek);
+                return NactCron_Evaluators.isInDayOfWeek(dayOfMonth, dayOfWeek, daysInMonth, daysOfWeek);
               }));
-        Belt_Range.forEach(0, 6, testLastDayOfWeekInMonth);
-        Belt_Range.forEach(0, 6, testNthDayOfWeekInMonth);
-        Belt_Range.forEach(0, 4, testRandomValues);
-        return Belt_Range.forEach(0, 4, testRandomInterval);
+        describe("`LastDayOfWeekInMonth", (function () {
+                return Belt_Range.forEach(0, 6, testLastDayOfWeekInMonth);
+              }));
+        describe("`NthDayOfWeekInMonth", (function () {
+                return Belt_Range.forEach(0, 6, testNthDayOfWeekInMonth);
+              }));
+        describe("`Values", (function () {
+                return Belt_Range.forEach(0, 4, testRandomValues);
+              }));
+        describe("`Interval", (function () {
+                return Belt_Range.forEach(0, 4, testRandomInterval);
+              }));
+        return /* () */0;
       }));
 
 describe("isInDayOfMonth", (function () {
@@ -413,7 +482,7 @@ describe("isInDayOfMonth", (function () {
                           var daysInMonth = 28 + Random.$$int(4) | 0;
                           var match = +(i > daysInMonth);
                           var daysInMonth$1 = match !== 0 ? i : daysInMonth;
-                          return Jest.ExpectJs[/* toBe */2](/* true */1, Jest.ExpectJs[/* expect */0](Evaluators$NactRecron.isInDayOfMonth(i, Random.$$int(7), daysInMonth$1, /* `Interval */[
+                          return Jest.ExpectJs[/* toEqual */12](/* true */1, Jest.ExpectJs[/* expect */0](NactCron_Evaluators.isInDayOfMonth(i, Random.$$int(7), daysInMonth$1, /* `Interval */[
                                               36582757,
                                               /* tuple */[
                                                 start,
@@ -428,7 +497,7 @@ describe("isInDayOfMonth", (function () {
                           var daysInMonth = 28 + Random.$$int(4) | 0;
                           var match = +(i > daysInMonth);
                           var daysInMonth$1 = match !== 0 ? i : daysInMonth;
-                          return Jest.ExpectJs[/* toBe */2](/* false */0, Jest.ExpectJs[/* expect */0](Evaluators$NactRecron.isInDayOfMonth(i, Random.$$int(7), daysInMonth$1, /* `Interval */[
+                          return Jest.ExpectJs[/* toEqual */12](/* false */0, Jest.ExpectJs[/* expect */0](NactCron_Evaluators.isInDayOfMonth(i, Random.$$int(7), daysInMonth$1, /* `Interval */[
                                               36582757,
                                               /* tuple */[
                                                 start,
@@ -460,7 +529,7 @@ describe("isInDayOfMonth", (function () {
             var match = +(i > daysInMonth);
             var daysInMonth$1 = match !== 0 ? i : daysInMonth;
             return Jest.test("Time " + (String(i) + " which is in the set of supplied values should evaluate to true"), (function () {
-                          return Jest.ExpectJs[/* toBe */2](/* true */1, Jest.ExpectJs[/* expect */0](Evaluators$NactRecron.isInDayOfMonth(i, Random.$$int(7), daysInMonth$1, /* `Values */[
+                          return Jest.ExpectJs[/* toEqual */12](/* true */1, Jest.ExpectJs[/* expect */0](NactCron_Evaluators.isInDayOfMonth(i, Random.$$int(7), daysInMonth$1, /* `Values */[
                                               72054786,
                                               values
                                             ])));
@@ -471,7 +540,7 @@ describe("isInDayOfMonth", (function () {
             var match = +(i > daysInMonth);
             var daysInMonth$1 = match !== 0 ? i : daysInMonth;
             return Jest.test("Time " + (String(i) + " which is in the set of supplied values should evaluate to true"), (function () {
-                          return Jest.ExpectJs[/* toBe */2](/* false */0, Jest.ExpectJs[/* expect */0](Evaluators$NactRecron.isInDayOfMonth(i, Random.$$int(7), daysInMonth$1, /* `Values */[
+                          return Jest.ExpectJs[/* toEqual */12](/* false */0, Jest.ExpectJs[/* expect */0](NactCron_Evaluators.isInDayOfMonth(i, Random.$$int(7), daysInMonth$1, /* `Values */[
                                               72054786,
                                               values
                                             ])));
@@ -485,7 +554,7 @@ describe("isInDayOfMonth", (function () {
                   var daysInMonth = param[1];
                   return Jest.test("The " + (String(n) + ("th last day before end of month " + (String(param[0]) + " should evaluate to true"))), (function () {
                                 var dayOfMonth = daysInMonth - n | 0;
-                                return Jest.ExpectJs[/* toBe */2](/* true */1, Jest.ExpectJs[/* expect */0](Evaluators$NactRecron.isInDayOfMonth(dayOfMonth, Random.$$int(7), daysInMonth, /* `DaysBeforeEndOfMonth */[
+                                return Jest.ExpectJs[/* toEqual */12](/* true */1, Jest.ExpectJs[/* expect */0](NactCron_Evaluators.isInDayOfMonth(dayOfMonth, Random.$$int(7), daysInMonth, /* `DaysBeforeEndOfMonth */[
                                                     1044297284,
                                                     n
                                                   ])));
@@ -495,21 +564,105 @@ describe("isInDayOfMonth", (function () {
                         var daysInMonth = param[1];
                         return Jest.test("Days other than the " + (String(n) + ("th last day before end of month " + (String(param[0]) + " should evaluate to false"))), (function () {
                                       var dayOfMonth = Caml_int32.mod_(Random.$$int(daysInMonth) + (daysInMonth - n | 0) | 0, daysInMonth + 1 | 0) + 1 | 0;
-                                      return Jest.ExpectJs[/* toBe */2](/* false */0, Jest.ExpectJs[/* expect */0](Evaluators$NactRecron.isInDayOfMonth(dayOfMonth, Random.$$int(7), daysInMonth, /* `DaysBeforeEndOfMonth */[
+                                      return Jest.ExpectJs[/* toEqual */12](/* false */0, Jest.ExpectJs[/* expect */0](NactCron_Evaluators.isInDayOfMonth(dayOfMonth, Random.$$int(7), daysInMonth, /* `DaysBeforeEndOfMonth */[
                                                           1044297284,
                                                           n
                                                         ])));
                                     }));
                       }));
         };
-        testWildcard((function (daysInMonth, dayOfMonth, dayOfWeek, daysOfWeek) {
-                return Evaluators$NactRecron.isInDayOfMonth(dayOfMonth, dayOfWeek, daysInMonth, daysOfWeek);
+        describe("`NearestWeekdayToDay", (function () {
+                var testRandomWeekday = function () {
+                  var dayOfWeek = Random.$$int(5) + 1 | 0;
+                  var daysInMonth = 28 + Random.$$int(4) | 0;
+                  var dayOfMonth = Random.$$int(daysInMonth + 1 | 0);
+                  return Jest.test(intToDay(dayOfWeek) + (", " + (String(dayOfMonth) + (" should evaluate to true as it is the nearest  weekday to day " + (String(dayOfMonth) + " of the month")))), (function () {
+                                return Jest.ExpectJs[/* toEqual */12](/* true */1, Jest.ExpectJs[/* expect */0](NactCron_Evaluators.isInDayOfMonth(dayOfMonth, dayOfWeek, daysInMonth, /* `NearestWeekday */[
+                                                    525980234,
+                                                    dayOfMonth
+                                                  ])));
+                              }));
+                };
+                var testRandomWeekend = function () {
+                  var daysInMonth = Random.$$int(4) + 28 | 0;
+                  var dayOfMonth = Random.$$int(daysInMonth + 1 | 0);
+                  return Jest.test("Weekend on day " + (String(dayOfMonth) + " of the month should evaluate to false as while it's the correct day of month, it's not a weekday."), (function () {
+                                var match = +(Random.$$int(2) === 1);
+                                return Jest.ExpectJs[/* toEqual */12](/* false */0, Jest.ExpectJs[/* expect */0](NactCron_Evaluators.isInDayOfMonth(dayOfMonth, match !== 0 ? 6 : 0, daysInMonth, /* `NearestWeekday */[
+                                                    525980234,
+                                                    dayOfMonth
+                                                  ])));
+                              }));
+                };
+                Jest.test("A Friday two days before the end of the month when targeting the nearest weekday to the last day of the a specific month should evaluate to true", (function () {
+                        var daysInMonth = Random.$$int(4) + 28 | 0;
+                        return Jest.ExpectJs[/* toEqual */12](/* true */1, Jest.ExpectJs[/* expect */0](NactCron_Evaluators.isInDayOfMonth(daysInMonth - 2 | 0, 5, daysInMonth, /* `NearestWeekday */[
+                                            525980234,
+                                            daysInMonth
+                                          ])));
+                      }));
+                Jest.test("A Friday three days before the end of the month when targeting the nearest weekday to the last day of the a specific month should evaluate to false", (function () {
+                        var daysInMonth = Random.$$int(4) + 28 | 0;
+                        return Jest.ExpectJs[/* toEqual */12](/* false */0, Jest.ExpectJs[/* expect */0](NactCron_Evaluators.isInDayOfMonth(daysInMonth - 3 | 0, 5, daysInMonth, /* `NearestWeekday */[
+                                            525980234,
+                                            daysInMonth
+                                          ])));
+                      }));
+                Jest.test("A Monday the day after the scheduled day in the same month should evaluate to true as it's the nearest weekday", (function () {
+                        var daysInMonth = Random.$$int(4) + 28 | 0;
+                        var dayOfMonth = Random.$$int(daysInMonth);
+                        return Jest.ExpectJs[/* toEqual */12](/* true */1, Jest.ExpectJs[/* expect */0](NactCron_Evaluators.isInDayOfMonth(dayOfMonth, 1, daysInMonth, /* `NearestWeekday */[
+                                            525980234,
+                                            dayOfMonth - 1 | 0
+                                          ])));
+                      }));
+                Jest.test("A Friday the day before the scheduled day in the same month should evaluate to true as it's the nearest weekday", (function () {
+                        var daysInMonth = Random.$$int(4) + 28 | 0;
+                        var scheduledDayOfMonth = Random.$$int(daysInMonth);
+                        return Jest.ExpectJs[/* toEqual */12](/* true */1, Jest.ExpectJs[/* expect */0](NactCron_Evaluators.isInDayOfMonth(scheduledDayOfMonth - 1 | 0, 5, daysInMonth, /* `NearestWeekday */[
+                                            525980234,
+                                            scheduledDayOfMonth
+                                          ])));
+                      }));
+                Belt_Array.forEach(Belt_Array.range(0, 3), testRandomWeekday);
+                return Belt_Array.forEach(Belt_Array.range(0, 3), testRandomWeekend);
               }));
-        Belt_Range.forEach(0, 4, testRandomValues);
-        Belt_Range.forEach(0, 4, testNthLastDayOfMonth);
-        return Belt_Range.forEach(0, 4, testRandomInterval);
+        testWildcard((function (daysInMonth, dayOfMonth, dayOfWeek, daysOfWeek) {
+                return NactCron_Evaluators.isInDayOfMonth(dayOfMonth, dayOfWeek, daysInMonth, daysOfWeek);
+              }));
+        describe("`LastWeekdayOfMonth", (function () {
+                Jest.test("A weekday at the end of the month should always evaluate to true", (function () {
+                        var daysInMonth = Random.$$int(4) + 28 | 0;
+                        return Jest.ExpectJs[/* toEqual */12](/* true */1, Jest.ExpectJs[/* expect */0](NactCron_Evaluators.isInDayOfMonth(daysInMonth, Random.$$int(5) + 1 | 0, daysInMonth, /* LastWeekdayOfMonth */-595231305)));
+                      }));
+                Jest.test("A weekend at the end of the month should always evaluate to false", (function () {
+                        var daysInMonth = Random.$$int(4) + 28 | 0;
+                        return Jest.ExpectJs[/* toEqual */12](/* false */0, Jest.ExpectJs[/* expect */0](NactCron_Evaluators.isInDayOfMonth(daysInMonth, (Random.$$int(2) + 6 | 0) % 7, daysInMonth, /* LastWeekdayOfMonth */-595231305)));
+                      }));
+                Jest.test("A Friday the day before the end of the month should always evaluate to true", (function () {
+                        var daysInMonth = Random.$$int(4) + 28 | 0;
+                        return Jest.ExpectJs[/* toEqual */12](/* true */1, Jest.ExpectJs[/* expect */0](NactCron_Evaluators.isInDayOfMonth(daysInMonth - 1 | 0, 5, daysInMonth, /* LastWeekdayOfMonth */-595231305)));
+                      }));
+                return Jest.test("A Friday two days before the end of the month should always evaluate to true", (function () {
+                              var daysInMonth = Random.$$int(4) + 28 | 0;
+                              return Jest.ExpectJs[/* toEqual */12](/* true */1, Jest.ExpectJs[/* expect */0](NactCron_Evaluators.isInDayOfMonth(daysInMonth - 2 | 0, 5, daysInMonth, /* LastWeekdayOfMonth */-595231305)));
+                            }));
+              }));
+        describe("`Values", (function () {
+                return Belt_Range.forEach(0, 4, testRandomValues);
+              }));
+        describe("`DaysBeforeEndOfMonth", (function () {
+                return Belt_Range.forEach(0, 4, testNthLastDayOfMonth);
+              }));
+        describe("`Interval", (function () {
+                return Belt_Range.forEach(0, 4, testRandomInterval);
+              }));
+        return /* () */0;
       }));
 
+var Evaluators = 0;
+
+exports.Evaluators = Evaluators;
 exports.daysInMonths = daysInMonths;
 exports.intToDay = intToDay;
 exports.randomTime = randomTime;

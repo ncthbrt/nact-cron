@@ -440,7 +440,7 @@ browser-resolve@^1.11.2:
   dependencies:
     resolve "1.1.7"
 
-bs-platform@^2.2.0:
+bs-platform@^2.2.3:
   version "2.2.3"
   resolved "https://registry.yarnpkg.com/bs-platform/-/bs-platform-2.2.3.tgz#d905ae10a5f3621e6a739041dfa0b58483a2174f"
 
@@ -3014,6 +3014,10 @@ test-exclude@^4.1.1:
 throat@^4.0.0:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/throat/-/throat-4.1.0.tgz#89037cbc92c56ab18926e6ba4cbb200e15672a6a"
+
+timekeeper@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/timekeeper/-/timekeeper-2.1.0.tgz#2a5dbe0dae665396b636edf17435d3e27d2e4e78"
 
 tmpl@1.0.x:
   version "1.0.4"

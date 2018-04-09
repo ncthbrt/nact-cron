@@ -15,9 +15,10 @@
   "license": "MIT",
   "devDependencies": {
     "@glennsl/bs-jest": "^0.4.2",
-    "bs-platform": "^2.2.0",
+    "bs-platform": "^2.2.3",
     "husky": "^0.14.3",
-    "reason-nact": "^2.0.1"
+    "reason-nact": "^2.0.1",
+    "timekeeper": "^2.1.0"
   },
   "peerDependencies": {
     "reason-nact": "^2.0.1"

@@ -2,7 +2,7 @@
 'use strict';
 
 var Jest = require("@glennsl/bs-jest/src/jest.js");
-var Expression$NactRecron = require("../src/Expression.bs.js");
+var NactCron_Expression = require("../src/NactCron_Expression.bs.js");
 
 function testExpression($staropt$star, $staropt$star$1, $staropt$star$2, $staropt$star$3, $staropt$star$4, $staropt$star$5, expression) {
   var minutes = $staropt$star ? $staropt$star[0] : /* Wildcard */46765562;
@@ -20,14 +20,14 @@ function testExpression($staropt$star, $staropt$star$1, $staropt$star$2, $starop
                             /* daysOfWeek */daysOfWeek,
                             /* years */years,
                             /* expression */expression
-                          ], Jest.ExpectJs[/* expect */0](Expression$NactRecron.parse(expression)));
+                          ], Jest.ExpectJs[/* expect */0](NactCron_Expression.parse(expression)));
               }));
 }
 
 function testMalformedExpression(expression) {
   return Jest.test("The cron expression " + (expression + " should fail to parse"), (function () {
-                return Jest.ExpectJs[/* toThrowException */20](Expression$NactRecron.MalformedCronExpression, Jest.ExpectJs[/* expectFn */1]((function () {
-                                  return Expression$NactRecron.parse(expression);
+                return Jest.ExpectJs[/* toThrowException */20](NactCron_Expression.MalformedCronExpression, Jest.ExpectJs[/* expectFn */1]((function () {
+                                  return NactCron_Expression.parse(expression);
                                 }), /* () */0));
               }));
 }
@@ -483,8 +483,17 @@ testMalformedExpression("* * * JANFEB *");
 
 testMalformedExpression("* * * - *");
 
-testMalformedExpression("* * * * * -");
+Jest.test("A malformed cron expression should return None when calling tryParse", (function () {
+        return Jest.ExpectJs[/* toEqual */12](/* None */0, Jest.ExpectJs[/* expect */0](NactCron_Expression.tryParse("* * * * * -")));
+      }));
 
+Jest.test("A well formed cron expression should return Some when calling tryParse", (function () {
+        return Jest.ExpectJs[/* toEqual */12](/* Some */[NactCron_Expression.parse("* * * * *")], Jest.ExpectJs[/* expect */0](NactCron_Expression.tryParse("* * * * *")));
+      }));
+
+var Expression = 0;
+
+exports.Expression = Expression;
 exports.testExpression = testExpression;
 exports.testMalformedExpression = testMalformedExpression;
 /*  Not a pure module */
