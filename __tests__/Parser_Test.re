@@ -33,7 +33,8 @@ let testExpression =
 let testMalformedExpression = expression =>
   test("The cron expression " ++ expression ++ " should fail to parse", () =>
     expectFn(() => Expression.parse(expression), ())
-    |> toThrowException(Expression.MalformedCronExpression)
+    // |> toThrowException(Expression.MalformedCronExpression)
+    |> toThrow
   );
 
 testExpression("* * * * *");

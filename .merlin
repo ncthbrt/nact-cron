@@ -1,13 +1,12 @@
 ####{BSB GENERATED: NO EDIT
-FLG -ppx /Users/ncthbrt/git/nact-patterns/node_modules/bs-platform/lib/bsppx.exe
-S /Users/ncthbrt/git/nact-patterns/node_modules/bs-platform/lib/ocaml
-B /Users/ncthbrt/git/nact-patterns/node_modules/bs-platform/lib/ocaml
-FLG -nostdlib -no-alias-deps -color always
-FLG -w -30-40+6+7+27+32..39+44+45+101
-S /Users/ncthbrt/git/nact-patterns/node_modules/reason-nact/lib/ocaml
-B /Users/ncthbrt/git/nact-patterns/node_modules/reason-nact/lib/ocaml
-S /Users/ncthbrt/git/nact-patterns/node_modules/@glennsl/bs-jest/lib/ocaml
-B /Users/ncthbrt/git/nact-patterns/node_modules/@glennsl/bs-jest/lib/ocaml
+FLG -ppx '/Users/mando/Github/nact-cron/node_modules/bs-platform/darwin/bsc.exe -as-ppx '
+S /Users/mando/Github/nact-cron/node_modules/bs-platform/lib/ocaml
+B /Users/mando/Github/nact-cron/node_modules/bs-platform/lib/ocaml
+FLG -w +a-4-9-20-40-41-42-50-61-102-48-40-42-61
+S /Users/mando/Github/nact-cron/node_modules/reason-nact/lib/ocaml
+B /Users/mando/Github/nact-cron/node_modules/reason-nact/lib/ocaml
+S /Users/mando/Github/nact-cron/node_modules/@glennsl/bs-jest/lib/ocaml
+B /Users/mando/Github/nact-cron/node_modules/@glennsl/bs-jest/lib/ocaml
 S __tests__
 B lib/bs/__tests__
 S src

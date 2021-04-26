@@ -19,13 +19,13 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "@glennsl/bs-jest": "^0.4.2",
-    "bs-platform": "^2.2.3",
-    "husky": "^0.15.0-rc.13",
-    "reason-nact": "^2.0.1",
-    "timekeeper": "^2.1.0"
+    "@glennsl/bs-jest": "^0.7.0",
+    "bs-platform": "^9.0.2",
+    "husky": "^6.0.0",
+    "reason-nact": "idkjs/reason-nact",
+    "timekeeper": "^2.2.0"
   },
   "peerDependencies": {
-    "reason-nact": "^2.0.1"
+    "reason-nact": "^5.0.0"
   }
 }

@@ -23,8 +23,8 @@
     "@glennsl/bs-jest"
   ],
   "warnings": {
+    "number": "-48",
     "error": "+101"
   },
-  "namespace": false,
-  "refmt": 3
+  "namespace": false
 }

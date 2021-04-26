@@ -11,10 +11,10 @@ let (>=>) = (f, g) => Js.Promise.then_(g, f);
 module TimeKeeper = {
   type t;
   [@bs.module] external timekeeper : t = "timekeeper";
-  [@bs.send] external freeze : (t, Js.Date.t) => unit = "";
-  [@bs.send] external reset : t => unit = "";
-  [@bs.send] external travel : (t, Js.Date.t) => unit = "";
-  [@bs.send] external isKeepingTime : t => bool = "";
+  [@bs.send] external freeze : (t, Js.Date.t) => unit = "freeze";
+  [@bs.send] external reset : t => unit = "reset";
+  [@bs.send] external travel : (t, Js.Date.t) => unit = "travel";
+  [@bs.send] external isKeepingTime : t => bool = "isKeepingTime";
 };
 
 let delay = ms =>
