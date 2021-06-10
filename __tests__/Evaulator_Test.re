@@ -132,11 +132,11 @@ let testIsInExpr = (name, f, ~lowerBound=0, ~upperBound) => {
   );
 };
 
-testIsInExpr("isInMinute", isInMinute, ~upperBound=59);
+let _ = testIsInExpr("isInMinute", isInMinute, ~upperBound=59);
 
-testIsInExpr("isInHour", isInHour, ~lowerBound=0, ~upperBound=23);
+let _ = testIsInExpr("isInHour", isInHour, ~lowerBound=0, ~upperBound=23);
 
-testIsInExpr("isInMonth", isInMonth, ~lowerBound=0, ~upperBound=23);
+let _ = testIsInExpr("isInMonth", isInMonth, ~lowerBound=0, ~upperBound=23);
 
 describe("isInYear", () => {
   let randomTime = () => randomTime(~start=0, ~end_=3000, ~step=1);

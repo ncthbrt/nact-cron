@@ -89,10 +89,10 @@ type fieldToken =
   | IntervalToken(option(int), option(int))
   | CommaSeparatedArrayToken(array(int));
 
-let trueF = (_) => true;
+let trueF = _ => true;
 
 let isNumber = str =>
-  try (int_of_string(str) |> trueF) {
+  try(int_of_string(str) |> trueF) {
   | Failure(_) => false
   };
 
@@ -100,7 +100,7 @@ let toCommaSeparatedList = (str, substitute) =>
   CommaSeparatedArrayToken(
     Js.String.split(",", str)
     |> Belt.Array.map(_, i =>
-         try (int_of_string(substitute(i))) {
+         try(int_of_string(substitute(i))) {
          | Failure(_) => raise(MalformedCronExpression)
          }
        ),
@@ -127,7 +127,7 @@ let parseToken = (field, substitutions) => {
 };
 
 let getIntervalToken = step =>
-  try (int_of_string(step)) {
+  try(int_of_string(step)) {
   | Failure(_) => raise(MalformedCronExpression)
   };
 
@@ -182,7 +182,7 @@ let parseDaysOfMonthSubExpr =
   fun
   | "L" => `DaysBeforeEndOfMonth(0)
   | "LW" => `LastWeekdayOfMonth
-  | subExpr when Js.Re.test(subExpr, daysBeforeEndOfMonthRegex) => {
+  | subExpr when Js.Re.test_(daysBeforeEndOfMonthRegex, subExpr) => {
       let n = int_of_string(Js.String.replace("L-", "", subExpr));
       if (inRange(1, 31, n)) {
         `DaysBeforeEndOfMonth(n - 1);
@@ -190,7 +190,7 @@ let parseDaysOfMonthSubExpr =
         raise(MalformedCronExpression);
       };
     }
-  | subExpr when Js.Re.test(subExpr, nearestWeekdayRegex) => {
+  | subExpr when Js.Re.test_(nearestWeekdayRegex, subExpr) => {
       let n = int_of_string(Js.String.replace("W", "", subExpr));
       if (inRange(1, 32, n)) {
         `NearestWeekday(n);
@@ -202,17 +202,17 @@ let parseDaysOfMonthSubExpr =
 
 let parseDaysOfWeekSubExpr =
   fun
-  | subExpr when Js.Re.test(subExpr, lastDayOfWeekRegex) => {
+  | subExpr when Js.Re.test_(lastDayOfWeekRegex, subExpr) => {
       let n = subExpr |> Js.String.replace("L", "", _) |> int_of_string(_);
       `LastDayOfWeekInMonth(n == 7 ? 0 : n);
     }
-  | subExpr when Js.Re.test(subExpr, nthDayOfWeekInMonthRegex) => {
+  | subExpr when Js.Re.test_(nthDayOfWeekInMonthRegex, subExpr) => {
       let arr = Js.String.split("#", subExpr);
       let (day, nth) =
-        try (
+        try((
           int_of_string(substitute(dayNames, arr[0])),
           int_of_string(arr[1]),
-        ) {
+        )) {
         | Failure(_) => raise(MalformedCronExpression)
         };
       `NthDayOfWeekInMonth((day, nth));
@@ -243,12 +243,12 @@ let parseYearsSubExpr = subExpr => {
 };
 
 let spacesRegex = Js.Re.fromString("\\s+");
-
 let parse = str =>
   switch (
     Js.String.trim(str)
     |> substituteMacros(_)
     |> Js.String.splitByRe(spacesRegex, _)
+    |> Belt.Array.keepMap(_, x => x)
     |> Belt.List.fromArray
   ) {
   | [minutes, hours, daysOfMonth, months, daysOfWeek, ...rest]
@@ -269,6 +269,6 @@ let parse = str =>
   };
 
 let tryParse = str =>
-  try (Some(parse(str))) {
+  try(Some(parse(str))) {
   | MalformedCronExpression => None
   };

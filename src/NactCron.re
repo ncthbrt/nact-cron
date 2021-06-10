@@ -1,6 +1,6 @@
 module Expression = NactCron_Expression;
 
-module Evaluators = NactCron_Evaluators;
+// module Evaluators = NactCron_Evaluators;
 
 module Scheduling = NactCron_Scheduling;
 
@@ -49,22 +49,24 @@ let dispatchPendingJobs = ({scheduleState, lastMinute} as state, {persist}) => {
   if (currentMinute > lastMinute) {
     let scheduleState =
       Belt.Array.range(lastMinute, currentMinute)
-      |. promiseReduce(
-           scheduleState,
-           (state, minute) => {
-             let state =
-               Scheduling.update(
-                 state,
-                 Scheduling.Time.fromDate(dateFromMinute(minute)),
-               );
-             let jobs = Scheduling.getPendingJobs(scheduleState);
-             Belt.List.forEach(jobs, (Schedule(_, _, (actor, msg))) =>
-               actor <-< msg
-             );
-             persist(`ProcessedMinute(minute))
-             |> Js.Promise.then_(() => return(state));
-           },
-         );
+      ->(
+          promiseReduce(
+            scheduleState,
+            (state, minute) => {
+              let state =
+                Scheduling.update(
+                  state,
+                  Scheduling.Time.fromDate(dateFromMinute(minute)),
+                );
+              let jobs = Scheduling.getPendingJobs(scheduleState);
+              Belt.List.forEach(jobs, (Schedule(_, _, (actor, msg))) =>
+                actor <-< msg
+              );
+              persist(`ProcessedMinute(minute))
+              |> Js.Promise.then_(() => return(state));
+            },
+          )
+        );
     then_(scheduleState => return({...state, scheduleState}), scheduleState);
   } else {
     return(state);
@@ -78,7 +80,7 @@ let startScheduledJob =
       {persist, recovering},
     ) => {
   let parsedExpression =
-    try (Js.Result.Ok(Expression.parse(expr))) {
+    try(Js.Result.Ok(Expression.parse(expr))) {
     | Expression.MalformedCronExpression =>
       Js.Result.Error(`MalformedCronExpression(expr))
     };
@@ -88,8 +90,9 @@ let startScheduledJob =
     Js.Promise.resolve(state);
   | Js.Result.Ok(parsedExpr) =>
     (
-      recovering ?
-        return() : persist(`StartScheduledJob((expr, msg, actor, nobody())))
+      recovering
+        ? return()
+        : persist(`StartScheduledJob((expr, msg, actor, nobody())))
     )
     |> Js.Promise.then_(() => {
          let (Scheduling.Schedule(id, _, _), scheduleState) =
@@ -141,5 +144,5 @@ let make = (parent, ~key) =>
         getScheduledJob(state, id, requestee)
       };
     },
-    {scheduleState: Scheduling.empty, interval: None, lastMinute: (-1)},
+    _ => {scheduleState: Scheduling.empty, interval: None, lastMinute: (-1)},
   );
